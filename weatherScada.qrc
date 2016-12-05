@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="weatherScada">
+    <file>img/about.png</file>
+    <file>img/exit.png</file>
+    <file>img/save.png</file>
+    <file>img/setting.png</file>
+    <file>qss/default.qss</file>
+    <file>qss/classic.qss</file>
+    <file>qss/fashion.qss</file>
+  </qresource>
+</RCC>

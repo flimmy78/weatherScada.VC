@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#define RELEASE_PNT(POINTER)    if(NULL != POINTER){delete POINTER;POINTER=NULL;}
+
 namespace Ui {
 class MainWindow;
 }

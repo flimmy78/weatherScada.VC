@@ -4,17 +4,29 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = weatherScada
 TEMPLATE = app
 
+SOURCES += src/main.cpp\
+        src/mainwindow.cpp \
+    src/protocol.cpp \
+    src/func.cpp \
+    src/sysconfig.cpp
 
-SOURCES += main.cpp\
-        mainwindow.cpp
+HEADERS  += inc/mainwindow.h \
+    inc/protocol.h \
+    inc/basedef.h \
+    inc/func.h \
+    inc/sysconfig.h
 
-HEADERS  += mainwindow.h
+INCLUDEPATH += 	inc
 
-FORMS    += mainwindow.ui
+FORMS    += ui/mainwindow.ui
+
+RESOURCES += weatherScada.qrc
+
+DESTDIR  = obj/

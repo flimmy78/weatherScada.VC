@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>476</width>
-    <height>328</height>
+    <width>533</width>
+    <height>346</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>476</width>
+     <width>533</width>
      <height>23</height>
     </rect>
    </property>
@@ -31,10 +31,28 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionConfig"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionConfig">
+   <property name="icon">
+    <iconset resource="../weatherScada.qrc">
+     <normaloff>:/weatherScada/img/setting.png</normaloff>:/weatherScada/img/setting.png</iconset>
+   </property>
+   <property name="text">
+    <string>参数配置</string>
+   </property>
+   <property name="toolTip">
+    <string>参数配置</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="../weatherScada.qrc"/>
+ </resources>
  <connections/>
 </ui>
