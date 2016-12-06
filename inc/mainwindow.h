@@ -2,8 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
-#define RELEASE_PNT(POINTER)    if(NULL != POINTER){delete POINTER;POINTER=NULL;}
+#include "basedef.h"
+#include "sysconfig.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,6 +19,10 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+	syconfigDlg* m_syconfigDlgPtr;
+private slots:
+	void on_actionConfig_triggered();
 };
 
 #endif // MAINWINDOW_H

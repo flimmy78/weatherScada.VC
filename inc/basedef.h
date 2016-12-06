@@ -1,6 +1,12 @@
 #ifndef BASEDEF_H
 #define BASEDEF_H
 
+#  ifdef WIN32
+#  define DLL_EXPORT __declspec(dllexport)
+#  else
+#  define DLL_EXPORT
+#  endif
+
 typedef unsigned char   uint8;
 typedef unsigned short  uint16;
 typedef unsigned int    uint32;
@@ -16,6 +22,9 @@ typedef int    int32;
 #define S16 short
 #define S32 int
 
+#define NO_ERR  0
+#define ERR_1   1
 
+#define RELEASE_PNT(POINTER)    if(NULL != POINTER){delete POINTER;POINTER=NULL;}
 
 #endif // BASEDEF_H
