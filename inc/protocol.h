@@ -124,6 +124,35 @@
 #define PROTO_VOPEN_ALL		0x55//全开
 /************************************************************************/
 
+/************************************************************************/
+/*                       一天24小时的时间点                               */
+/************************************************************************/
+#define TNODE_00	0x00//时间点00时
+#define TNODE_01	0x01//时间点01时
+#define TNODE_02	0x02//时间点02时
+#define TNODE_03	0x03//时间点03时
+#define TNODE_04	0x04//时间点04时
+#define TNODE_05	0x05//时间点05时
+#define TNODE_06	0x06//时间点06时
+#define TNODE_07	0x07//时间点07时
+#define TNODE_08	0x08//时间点08时
+#define TNODE_09	0x09//时间点09时
+#define TNODE_10	0x10//时间点10时
+#define TNODE_11	0x11//时间点11时
+#define TNODE_12	0x12//时间点12时
+#define TNODE_13	0x13//时间点13时
+#define TNODE_14	0x14//时间点14时
+#define TNODE_15	0x15//时间点15时
+#define TNODE_16	0x16//时间点16时
+#define TNODE_17	0x17//时间点17时
+#define TNODE_18	0x18//时间点18时
+#define TNODE_19	0x19//时间点19时
+#define TNODE_20	0x20//时间点20时
+#define TNODE_21	0x21//时间点21时
+#define TNODE_22	0x22//时间点22时
+#define TNODE_23	0x23//时间点23时
+/************************************************************************/
+
 #pragma pack(push)
 #pragma pack(1)
 
@@ -286,7 +315,6 @@ typedef struct {//温控计量一体化和通断时间面积法的历史数据头部结构
     U8 u8year;		//存储时的年
 } hisdata_head_str;
 typedef hisdata_head_str*  hisdata_head_ptr;
-
 
 typedef struct {//透传计量点数据中的固定信息部分
     U16 meterId;				//计量点号

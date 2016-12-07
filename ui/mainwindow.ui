@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="animated">
+   <bool>true</bool>
+  </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -20,7 +23,7 @@
      <x>0</x>
      <y>0</y>
      <width>533</width>
-     <height>23</height>
+     <height>17</height>
     </rect>
    </property>
   </widget>
@@ -29,9 +32,12 @@
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>false</bool>
+    <bool>true</bool>
    </attribute>
    <addaction name="actionConfig"/>
+   <addaction name="actionReadData"/>
+   <addaction name="separator"/>
+   <addaction name="actionExit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionConfig">
@@ -47,6 +53,30 @@
    </property>
    <property name="shortcut">
     <string>F2</string>
+   </property>
+  </action>
+  <action name="actionReadData">
+   <property name="icon">
+    <iconset resource="../weatherScada.qrc">
+     <normaloff>:/weatherScada/img/read.png</normaloff>:/weatherScada/img/read.png</iconset>
+   </property>
+   <property name="text">
+    <string>读取历史数据</string>
+   </property>
+   <property name="toolTip">
+    <string>读取历史数据</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="../weatherScada.qrc">
+     <normaloff>:/weatherScada/img/exit.png</normaloff>:/weatherScada/img/exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>退出</string>
+   </property>
+   <property name="toolTip">
+    <string>退出</string>
    </property>
   </action>
  </widget>

@@ -16,20 +16,29 @@ SOURCES += src/main.cpp\
     src/protocol.cpp \
     src/func.cpp \
     src/sysconfig.cpp \
-    src/db.cpp
+    src/db.cpp \
+    src/readdata.cpp \
+    src/thread.cpp \
+    src/com.cpp
 
 HEADERS  += inc/mainwindow.h \
     inc/protocol.h \
     inc/basedef.h \
     inc/func.h \
     inc/sysconfig.h \
-    inc/db.h
+    inc/db.h \
+    inc/readdata.h \
+    inc/thread.h \
+    inc/com.h
 
 INCLUDEPATH += 	inc
 
 FORMS    += ui/mainwindow.ui \
-    ui/sysconfig.ui
+    ui/sysconfig.ui \
+    ui/readdata.ui
 
 RESOURCES += weatherScada.qrc
 
 DESTDIR  = obj/
+
+OBJECTS_DIR = $$PWD/obj
