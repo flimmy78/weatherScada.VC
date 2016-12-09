@@ -3,7 +3,11 @@
 
 #include <QWidget>
 #include <QSerialPort>
+#include <QSerialPortInfo>
+#include <QSettings>
+#include <QMap>
 #include "basedef.h"
+#include "com.h"
 #include "ui_readdata.h"
 
 #define	TABLE_DEFAULT_ROWS	10
@@ -41,18 +45,27 @@ public:
     explicit readDataDlg(QWidget *parent = 0);
     ~readDataDlg();
 
+
 private:
     Ui::readDataForm *ui;
 
 	bool m_comIsOpen;
 	QSerialPort* m_comPort;
+	QList<QSerialPort::BaudRate> m_baudList;
+	QList<QSerialPort::DataBits> m_databitList;
+	QList<QSerialPort::Parity> m_parityList;
+	QList<QSerialPort::StopBits> m_stopbitList;
 
-	void initWidget();
 private slots:
-	void readCom();
-	void sendCom();
+	void initWidget();
 	void on_btnOpenCom_clicked();
 	void on_btnReadData_clicked();
+
+public slots:
+	void getData(const QList<historyDataStr> hisList, const int8 &err);
+
+signals:
+	void queryData(const QDate &start, const QDate &end);
 };
 
 #endif // READDATA_H

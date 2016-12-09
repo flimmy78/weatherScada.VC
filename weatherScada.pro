@@ -18,8 +18,8 @@ SOURCES += src/main.cpp\
     src/sysconfig.cpp \
     src/db.cpp \
     src/readdata.cpp \
-    src/thread.cpp \
-    src/com.cpp
+    src/com.cpp \
+    src/logic.cpp
 
 HEADERS  += inc/mainwindow.h \
     inc/protocol.h \
@@ -28,8 +28,8 @@ HEADERS  += inc/mainwindow.h \
     inc/sysconfig.h \
     inc/db.h \
     inc/readdata.h \
-    inc/thread.h \
-    inc/com.h
+    inc/com.h \
+    inc/logic.h
 
 INCLUDEPATH += 	inc
 

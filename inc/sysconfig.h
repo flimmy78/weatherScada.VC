@@ -2,10 +2,11 @@
 #define SYSCONFIG_H
 
 #include <QRegExp>
+#include <QValidator>
 #include <QSettings>
+#include <QMap>
 #include "basedef.h"
 #include "ui_sysconfig.h"
-
 
 class syconfigDlg : public QWidget
 {
@@ -17,8 +18,10 @@ public:
 
 private:
     Ui::sysconfigForm *ui;
-	QRegExp m_rx;
-	QValidator *m_validator;
+	QRegExp m_intRX;
+	QValidator *m_intValidator;
+	QRegExp m_floatRX;
+	QValidator *m_floatValidator;
 
 	void loadConfig();
 	void saveConfig();
