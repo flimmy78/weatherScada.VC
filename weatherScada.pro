@@ -8,6 +8,8 @@ QT       += core gui sql serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+CONFIG += console debug
+
 TARGET = weatherScada
 TEMPLATE = app
 

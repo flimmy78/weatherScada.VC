@@ -50,22 +50,33 @@ private:
     Ui::readDataForm *ui;
 
 	bool m_comIsOpen;
-	QSerialPort* m_comPort;
-	QList<QSerialPort::BaudRate> m_baudList;
+	QSettings* m_settings;
+
+	QThread* m_comThread;
+	comObject* m_comPort;
+
+	QList<QSerialPort::BaudRate> m_baudList;//绑定顺序与sysconfig中的combox一致, 下同
 	QList<QSerialPort::DataBits> m_databitList;
 	QList<QSerialPort::Parity> m_parityList;
 	QList<QSerialPort::StopBits> m_stopbitList;
 
 private slots:
 	void initWidget();
+	void initCom();
+
 	void on_btnOpenCom_clicked();
 	void on_btnReadData_clicked();
 
 public slots:
+	void closeEvent(QCloseEvent* e);
 	void getData(const QList<historyDataStr> hisList, const int8 &err);
 
+	void openComOK();
+	void openComFail();
 signals:
+	void signalClosed();
 	void queryData(const QDate &start, const QDate &end);
+	void openCom(comInfoPtr);
 };
 
 #endif // READDATA_H

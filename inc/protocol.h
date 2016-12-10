@@ -337,6 +337,8 @@ typedef tempControl_messure_remote_str* tempControl_messure_remote_ptr;
 
 #pragma pack(pop)
 
+extern uint8 protoR_readHisData(uint8* buf, uint16* bufSize, sysTimePtr timeNode);
+
 #endif//GATEWAY_PROTOCOL_VER==0x03
 #endif // GATEWAY_PROTOCOL_VER
 

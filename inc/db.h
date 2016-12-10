@@ -1,6 +1,7 @@
 #ifndef DB_H
 #define DB_H
 
+#include <QObject>
 #include <QSqlDatabase>
 #include <QtSql>
 #include "basedef.h"
@@ -19,11 +20,13 @@ private:
 	QSqlDatabase m_sqlDb;
 
 public slots:
+	void startThread();
 	bool openDB();
 	void closeDB();
 
 	bool insertHisData(historyDataPtr pHisData);
 signals:
+	void finished();
 	void insertOK();
 	void insertFail();
 };

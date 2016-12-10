@@ -1,29 +1,81 @@
 #include <QDate>
 #include <QMessageBox>
 #include <QSerialPortInfo>
+#include <QMetaType>
+#include <QThread>
 #include "readdata.h"
-
 
 readDataDlg::readDataDlg(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::readDataForm)
 {
     ui->setupUi(this);
+	m_settings = new QSettings(INI_PATH, QSettings::IniFormat);
+	initCom();
 	initWidget();
-	m_comIsOpen = false;
-	m_comPort = NULL;
 }
 
 readDataDlg::~readDataDlg()
 {
     RELEASE_PNT(ui)
-	RELEASE_PNT(m_comPort)
+	RELEASE_PNT(m_settings)
+}
+
+void readDataDlg::closeEvent(QCloseEvent* e)
+{
+	emit signalClosed();
+}
+
+void readDataDlg::initCom()
+{
+	m_comThread = NULL;
+	m_comThread = new QThread;
+	m_comIsOpen = false;
+	m_comPort = NULL;
+	m_comPort = new comObject();
+	m_comPort->moveToThread(m_comThread);
+	qRegisterMetaType<comInfoPtr>("comInfoPtr");
+	connect(this, SIGNAL(openCom(comInfoPtr)), m_comPort, SLOT(openCom(comInfoPtr)));
+	connect(m_comPort, SIGNAL(openComOK()), this, SLOT(openComOK()));
+	connect(m_comPort, SIGNAL(openComFail()), this, SLOT(openComFail()));
+	connect(this, SIGNAL(signalClosed()), m_comPort, SIGNAL(finished()));
+
+	connect(m_comThread, SIGNAL(started()), m_comPort, SLOT(startThread()));
+	connect(m_comPort, SIGNAL(finished()), m_comThread, SLOT(quit()));
+	connect(m_comPort, SIGNAL(finished()), m_comPort, SLOT(deleteLater()));
+	connect(m_comThread, SIGNAL(finished()), m_comThread, SLOT(deleteLater()));
+	m_comThread->start();
+
+	/*初始化combox*/
+	foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+		ui->portNameComboBox->addItem(info.portName());
+	}
+	ui->portNameComboBox->setCurrentIndex(m_settings->value(STRING_COM).toInt());
+	m_baudList << QSerialPort::Baud1200
+		<< QSerialPort::Baud2400
+		<< QSerialPort::Baud4800
+		<< QSerialPort::Baud9600
+		<< QSerialPort::Baud19200
+		<< QSerialPort::Baud38400
+		<< QSerialPort::Baud57600
+		<< QSerialPort::Baud115200;
+
+	m_databitList << QSerialPort::Data5
+		<< QSerialPort::Data6
+		<< QSerialPort::Data7
+		<< QSerialPort::Data8;
+
+	m_parityList << QSerialPort::NoParity
+		<< QSerialPort::OddParity
+		<< QSerialPort::EvenParity;
+
+	m_stopbitList << QSerialPort::OneStop
+		<< QSerialPort::OneAndHalfStop
+		<< QSerialPort::TwoStop;
 }
 
 void readDataDlg::initWidget()
 {
-	QSettings settings(INI_PATH, QSettings::IniFormat);
-
 	/*初始化日期*/
 	QDate terday = QDate::currentDate();
 	QDate yesterday = terday.addDays(-1);
@@ -32,33 +84,6 @@ void readDataDlg::initWidget()
 
 	/*初始化按钮*/
 	ui->btnReadData->setEnabled(false);
-
-	/*初始化com口*/
-	foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
-		ui->portNameComboBox->addItem(info.portName());
-	}
-	ui->portNameComboBox->setCurrentIndex(settings.value(STRING_COM).toInt());
-	m_baudList << QSerialPort::Baud1200
-				<< QSerialPort::Baud2400
-				<< QSerialPort::Baud4800
-				<< QSerialPort::Baud9600
-				<< QSerialPort::Baud19200
-				<< QSerialPort::Baud38400
-				<< QSerialPort::Baud57600
-				<< QSerialPort::Baud115200;
-
-	m_databitList <<QSerialPort::Data5
-					<< QSerialPort::Data6
-					<< QSerialPort::Data7
-					<< QSerialPort::Data8;
-
-	m_parityList << QSerialPort::NoParity
-				 << QSerialPort::OddParity
-				 << QSerialPort::EvenParity;
-
-	m_stopbitList << QSerialPort::OneStop
-					 << QSerialPort::OneAndHalfStop
-					 << QSerialPort::TwoStop;
 
 	/*初始化表格*/
 	ui->tableWidget->setRowCount(TABLE_DEFAULT_ROWS);
@@ -243,32 +268,28 @@ void readDataDlg::initWidget()
 
 void readDataDlg::on_btnOpenCom_clicked()
 {
-	QString portName = ui->portNameComboBox->currentText();   //获取串口名
-	QSettings settings(INI_PATH, QSettings::IniFormat);
+	comInfoStr portInfo;
+	
+	portInfo.portName = ui->portNameComboBox->currentText();
+	portInfo.baudrate = m_baudList[m_settings->value(STRING_BAUDRATE).toInt()];
+	portInfo.databits = m_databitList[m_settings->value(STRING_DATABITS).toInt()];
+	portInfo.parity = m_parityList[m_settings->value(STRING_PARITY).toInt()];
+	portInfo.stopbits = m_stopbitList[m_settings->value(STRING_STOPBITS).toInt()];
 
-#ifdef Q_OS_LINUX
-	m_comPort = new QSerialPort("/dev/" + portName);
-#elif defined (Q_OS_WIN)
-	m_comPort = new QSerialPort();
-	m_comPort->setPortName(portName);
-#endif
-	connect(m_comPort, SIGNAL(readyRead()), this, SLOT(readCom()));
+	emit openCom(&portInfo);
+	qDebug() << "signal openCom has been emitted!";
+}
 
-	m_comPort->setBaudRate(m_baudList[settings.value(STRING_BAUDRATE).toInt()]);
-	m_comPort->setDataBits(m_databitList[settings.value(STRING_DATABITS).toInt()]);
-	m_comPort->setParity(m_parityList[settings.value(STRING_PARITY).toInt()]);
-	m_comPort->setStopBits(m_stopbitList[settings.value(STRING_STOPBITS).toInt()]);
-	m_comPort->setFlowControl(QSerialPort::NoFlowControl);
-
-	if (m_comPort->open(QIODevice::ReadWrite)) {
-		ui->btnReadData->setEnabled(true);
-	}
-	else {
-		QMessageBox::critical(this, tr("Error"), tr("can't open ") + portName + tr("\ndevice is occupied or isn't exist!"), QMessageBox::Ok);
-		return;
-	}
-	settings.setValue(STRING_COM, ui->portNameComboBox->currentIndex());
+void readDataDlg::openComOK()
+{
+	ui->btnReadData->setEnabled(true);
+	m_settings->setValue(STRING_COM, ui->portNameComboBox->currentIndex());
 	m_comIsOpen = true;
+}
+
+void readDataDlg::openComFail()
+{
+	QMessageBox::critical(this, tr("Error"), tr("can't open this com.\ndevice is occupied or isn't exist!"), QMessageBox::Ok);
 }
 
 void readDataDlg::on_btnReadData_clicked()

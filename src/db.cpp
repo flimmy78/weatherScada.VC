@@ -13,6 +13,11 @@ sqliteDb::~sqliteDb()
 	closeDB();
 }
 
+void sqliteDb::startThread()
+{
+
+}
+
 bool sqliteDb::openDB()
 {
 	return m_sqlDb.open();
