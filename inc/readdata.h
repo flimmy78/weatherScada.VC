@@ -8,10 +8,16 @@
 #include <QMap>
 #include "basedef.h"
 #include "com.h"
+#include "logic.h"
+#include "db.h"
 #include "ui_readdata.h"
 
 #define	TABLE_DEFAULT_ROWS	10
 #define	TABLE_COLS			21
+
+#define WEATHER_FINE	tr("weather_fine")
+#define WEATHER_CLOUDY	tr("weather_cloudy")
+#define WEATHER_SHADE	tr("weather_shade")
 
 typedef enum {
 	COL_SEQ = 0		,//序列号
@@ -55,21 +61,30 @@ private:
 	QThread* m_comThread;
 	comObject* m_comPort;
 
-	QList<QSerialPort::BaudRate> m_baudList;//绑定顺序与sysconfig中的combox一致, 下同
-	QList<QSerialPort::DataBits> m_databitList;
-	QList<QSerialPort::Parity> m_parityList;
-	QList<QSerialPort::StopBits> m_stopbitList;
+	QThread* m_logicThread;
+	logicObject* m_logicObj;
 
+	QThread* m_dbThread;
+	sqliteDb* m_dbObj;
+
+	QList<QSerialPort::BaudRate>	m_baudList;//绑定顺序与sysconfig中的combox一致, 下同
+	QList<QSerialPort::DataBits>	m_databitList;
+	QList<QSerialPort::Parity>		m_parityList;
+	QList<QSerialPort::StopBits>	m_stopbitList;
+	QList<QString>					m_weatherList;
 private slots:
 	void initWidget();
 	void initCom();
+	void initLogic();
+	void initDb();
 
 	void on_btnOpenCom_clicked();
 	void on_btnReadData_clicked();
 
 public slots:
+	void showEvent(QShowEvent* e);
 	void closeEvent(QCloseEvent* e);
-	void getData(const QList<historyDataStr> hisList, const int8 &err);
+	void getData(const QList<historyDataStr>& hisList, const int8& err);
 
 	void openComOK();
 	void openComFail();

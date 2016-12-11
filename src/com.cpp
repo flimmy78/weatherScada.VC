@@ -38,9 +38,34 @@ void comObject::openCom(comInfoPtr pComInfo)
 void comObject::startThread()
 {
 	qDebug() << "### comObject::startThread thread:" << QThread::currentThreadId();
+	m_readBuf.clear();
+	m_timer.setInterval(TIME_OUT);
+	m_timer.stop();
+	connect(&m_timer, SIGNAL(timeout()), this, SLOT(sendData()));
 }
 
 void comObject::closeCom()
 {
 	m_serialPort->close();
+}
+
+void comObject::readBuf()
+{
+	QByteArray buf = m_serialPort->readAll();
+	
+	if (!buf.isEmpty())
+		m_readBuf.append(buf);
+}
+
+void comObject::sendBuf(QByteArray buf)
+{
+	m_readBuf.clear();
+	m_serialPort->write(buf);
+	m_timer.start(TIME_OUT);//等待串口数据全部接收完成
+}
+
+void comObject::sendData()
+{
+	m_timer.stop();
+	emit readBufReady(m_readBuf);
 }

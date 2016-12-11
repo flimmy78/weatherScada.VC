@@ -17,6 +17,7 @@ private:
 signals:
 	void finished();
 
+	void dataReady(const QList<historyDataStr>&, const int8&);
 public slots :
 	void startThread();
 

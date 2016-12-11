@@ -21,15 +21,18 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionConfig_triggered()
 {
-	if (NULL == m_syconfigDlgPtr)
-		m_syconfigDlgPtr = new syconfigDlg;
+	if (NULL != m_syconfigDlgPtr)
+		delete m_syconfigDlgPtr;
+
+	m_syconfigDlgPtr = new syconfigDlg;
 	m_syconfigDlgPtr->show();
 }
 
 void MainWindow::on_actionReadData_triggered()
 {
 	if (NULL == m_readDataDlgPtr)
-		m_readDataDlgPtr = new readDataDlg;
+		delete m_readDataDlgPtr;
+	m_readDataDlgPtr = new readDataDlg;
 	m_readDataDlgPtr->show();
 }
 

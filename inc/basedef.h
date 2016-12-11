@@ -20,6 +20,13 @@ typedef int    int32;
 #define ERR_CRITICAL	-1//致命错误
 
 #define RELEASE_PNT(POINTER)    if(NULL != POINTER){delete POINTER;POINTER=NULL;}
+
+#define CONNECT_THREAD(OBJECT, THREAD)	connect((THREAD), SIGNAL(started()), (OBJECT), SLOT(startThread()));\
+											connect((OBJECT), SIGNAL(finished()), (THREAD), SLOT(quit()));\
+											connect((OBJECT), SIGNAL(finished()), (OBJECT), SLOT(deleteLater()));\
+											connect((THREAD), SIGNAL(finished()), (THREAD), SLOT(deleteLater()));\
+											(THREAD)->start()
+
 #define STRLEN(c)	strlen((const char*)(c))
 
 #define INI_PATH			"ini/sysconfig.ini"
@@ -57,7 +64,7 @@ typedef sysTimeStr* sysTimePtr;
 
 typedef struct {
 	uint32	seq;			//序列号
-	sysTimeStr	timeNode;	//时间
+	sysTimeStr	timeNode;	//抄表时间点
 	float	tIn;			//供水温度
 	float	tOut;			//回水温度
 	float	tAvg;			//供回水的平均温度

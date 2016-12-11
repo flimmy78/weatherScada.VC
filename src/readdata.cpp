@@ -12,6 +12,8 @@ readDataDlg::readDataDlg(QWidget *parent) :
     ui->setupUi(this);
 	m_settings = new QSettings(INI_PATH, QSettings::IniFormat);
 	initCom();
+	initLogic();
+	initDb();
 	initWidget();
 }
 
@@ -21,8 +23,14 @@ readDataDlg::~readDataDlg()
 	RELEASE_PNT(m_settings)
 }
 
+void readDataDlg::showEvent(QShowEvent* e)
+{
+	e = e;
+}
+
 void readDataDlg::closeEvent(QCloseEvent* e)
 {
+	e = e;
 	emit signalClosed();
 }
 
@@ -72,6 +80,30 @@ void readDataDlg::initCom()
 	m_stopbitList << QSerialPort::OneStop
 		<< QSerialPort::OneAndHalfStop
 		<< QSerialPort::TwoStop;
+}
+
+void readDataDlg::initLogic()
+{
+	m_logicThread = NULL;
+	m_logicThread = new QThread;
+	m_logicObj = NULL;
+	m_logicObj = new logicObject();
+	m_logicObj->moveToThread(m_logicThread);
+	qRegisterMetaType<comInfoPtr>("comInfoPtr");
+	connect(this, SIGNAL(queryData(const QDate &, const QDate &)), \
+		m_logicObj, SLOT(readHisData(const QDate &, const QDate &)));
+	connect(m_logicObj, SIGNAL(dataReady(const QList<historyDataStr>&, const int8&)), \
+		this, SLOT(getData(const QList<historyDataStr>&, const int8&)));
+	connect(this, SIGNAL(signalClosed()), m_logicObj, SIGNAL(finished()));
+	CONNECT_THREAD(m_logicObj, m_logicThread);
+}
+
+void readDataDlg::initDb()
+{
+	m_weatherList << WEATHER_FINE
+				  << WEATHER_CLOUDY
+				  << WEATHER_SHADE;
+
 }
 
 void readDataDlg::initWidget()
@@ -270,14 +302,14 @@ void readDataDlg::on_btnOpenCom_clicked()
 {
 	comInfoStr portInfo;
 	
-	portInfo.portName = ui->portNameComboBox->currentText();
-	portInfo.baudrate = m_baudList[m_settings->value(STRING_BAUDRATE).toInt()];
-	portInfo.databits = m_databitList[m_settings->value(STRING_DATABITS).toInt()];
-	portInfo.parity = m_parityList[m_settings->value(STRING_PARITY).toInt()];
-	portInfo.stopbits = m_stopbitList[m_settings->value(STRING_STOPBITS).toInt()];
-
-	emit openCom(&portInfo);
-	qDebug() << "signal openCom has been emitted!";
+	if (m_settings) {
+		portInfo.portName = ui->portNameComboBox->currentText();
+		portInfo.baudrate = m_baudList[m_settings->value(STRING_BAUDRATE).toInt()];
+		portInfo.databits = m_databitList[m_settings->value(STRING_DATABITS).toInt()];
+		portInfo.parity = m_parityList[m_settings->value(STRING_PARITY).toInt()];
+		portInfo.stopbits = m_stopbitList[m_settings->value(STRING_STOPBITS).toInt()];
+		emit openCom(&portInfo);
+	}
 }
 
 void readDataDlg::openComOK()
@@ -305,7 +337,16 @@ void readDataDlg::on_btnReadData_clicked()
 	emit queryData(start, end);
 }
 
-void readDataDlg::getData(const QList<historyDataStr> hisList, const int8 &err)
+void readDataDlg::getData(const QList<historyDataStr>& hisList, const int8& err)
 {
-
+	switch (err) {
+	case ERR_CRITICAL:
+		break;
+	case ERR_OVERTIME:
+		break;
+	case NO_ERR:
+		break;
+	default:
+		break;
+	}
 }
