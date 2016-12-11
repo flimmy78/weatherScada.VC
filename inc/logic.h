@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QThread>
+#include <QDate>
 #include "basedef.h"
 
 class logicObject : public QObject
@@ -17,12 +18,14 @@ private:
 signals:
 	void finished();
 
+	void dateError();
 	void dataReady(const QList<historyDataStr>&, const int8&);
+	void readDbData1Node(sysTimePtr);
 public slots :
 	void startThread();
 
-	bool readOneNodeData(sysTimePtr timeNode);
-	bool readHisData(const QDate &start, const QDate &end);
+	void readOneNodeData(sysTimePtr);
+	void readHisData(const QDate &, const QDate &);
 };
 
 #endif // LOGIC_H

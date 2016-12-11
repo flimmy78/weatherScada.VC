@@ -44,3 +44,5 @@ RESOURCES += weatherScada.qrc
 DESTDIR  = obj/
 
 OBJECTS_DIR = $$PWD/obj
+
+TRANSLATIONS += ./language/weatherScada_en.ts ./language/weatherScada_zh.ts

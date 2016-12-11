@@ -20,12 +20,29 @@ void logicObject::startThread()
 	qDebug() << "logicObject startThread: " << QThread::currentThreadId();
 }
 
-bool logicObject::readHisData(const QDate &start, const QDate &end)
+void logicObject::readHisData(const QDate &start, const QDate &end)
 {
-	return true;
+	sysTimeStr timeNode;
+	int year = start.year();
+	int day = 0;
+
+	/*先判断时期区间的合法性*/
+	if (start.year() > end.year()) {//先判断年份
+		emit dateError();
+		return;
+	}
+	if (start.month() > end.month()) {//如果年份合法, 判断月份
+		emit dateError();
+		return;
+	}
+	if (start.day() > end.day()) {//最后判断日期
+		emit dateError();
+		return;
+	}
+	year = start.year();
 }
 
-bool logicObject::readOneNodeData(sysTimePtr timeNode)
+void logicObject::readOneNodeData(sysTimePtr timeNode)
 {
 	uint8 buf[GATEWAY_FRAME_MAX_LEN] = { 0 };
 	uint16 bufSize = 0;
@@ -34,15 +51,6 @@ bool logicObject::readOneNodeData(sysTimePtr timeNode)
 	uint16 hisDataCnt = 0;
 
 	protoR_readHisData(buf, &bufSize, timeNode);
-	//if (logic_sendAndRead(buf, &bufSize, UART_WAIT_SHORT) == ERR_OVERTIME)
-	//	return ERR_OVERTIME;
-	//if (protoA_hisData(buf, bufSize, &hisDataCnt, &BodyHeadStr, &hisDataStr[0]) == NO_ERR) {
-	//	if (BodyHeadStr.succeed == GAT_EXCEP_FAIL) {
-	//		GUI_MessageBox("\n当前时间点无历史数据\n", "失败", GUI_MESSAGEBOX_CF_MODAL);
-	//		return ERR_CRITICAL;
-	//	}
-	//	return ERR_CRITICAL;
-	//}
 
 	while (BodyHeadStr.succeed == 0x01) {
 		BodyHeadStr.seq++;
@@ -54,9 +62,5 @@ bool logicObject::readOneNodeData(sysTimePtr timeNode)
 		//if (db_storeTempHisData(&hisDataStr[0], hisDataCnt, sucCnt, failCnt) == ERR_CRITICAL)
 		//	goto resultErr;
 	}
-
-	return NO_ERR;
-resultErr:
-	return ERR_CRITICAL;
 }
 

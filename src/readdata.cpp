@@ -47,13 +47,7 @@ void readDataDlg::initCom()
 	connect(m_comPort, SIGNAL(openComOK()), this, SLOT(openComOK()));
 	connect(m_comPort, SIGNAL(openComFail()), this, SLOT(openComFail()));
 	connect(this, SIGNAL(signalClosed()), m_comPort, SIGNAL(finished()));
-
-	connect(m_comThread, SIGNAL(started()), m_comPort, SLOT(startThread()));
-	connect(m_comPort, SIGNAL(finished()), m_comThread, SLOT(quit()));
-	connect(m_comPort, SIGNAL(finished()), m_comPort, SLOT(deleteLater()));
-	connect(m_comThread, SIGNAL(finished()), m_comThread, SLOT(deleteLater()));
-	m_comThread->start();
-
+	CONNECT_THREAD(m_comPort, m_comThread);
 	/*³õÊ¼»¯combox*/
 	foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
 		ui->portNameComboBox->addItem(info.portName());
@@ -100,9 +94,6 @@ void readDataDlg::initLogic()
 
 void readDataDlg::initDb()
 {
-	m_weatherList << WEATHER_FINE
-				  << WEATHER_CLOUDY
-				  << WEATHER_SHADE;
 
 }
 

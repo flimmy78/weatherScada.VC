@@ -54,10 +54,9 @@ public slots:
 	void insertOneRow(historyDataPtr);
 signals:
 	void finished();
-	void insertOK();
-	void insertFail();
 	void oneRowExist(historyDataPtr);
 	void oneRowNotExist(sysTimePtr);
+	void insertOK();
 	void insertFail(sysTimePtr);
 };
 

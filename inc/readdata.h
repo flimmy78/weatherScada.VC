@@ -15,10 +15,6 @@
 #define	TABLE_DEFAULT_ROWS	10
 #define	TABLE_COLS			21
 
-#define WEATHER_FINE	tr("weather_fine")
-#define WEATHER_CLOUDY	tr("weather_cloudy")
-#define WEATHER_SHADE	tr("weather_shade")
-
 typedef enum {
 	COL_SEQ = 0		,//ÐòÁÐºÅ
 	COL_DATE		,//ÈÕÆÚ
@@ -71,7 +67,6 @@ private:
 	QList<QSerialPort::DataBits>	m_databitList;
 	QList<QSerialPort::Parity>		m_parityList;
 	QList<QSerialPort::StopBits>	m_stopbitList;
-	QList<QString>					m_weatherList;
 private slots:
 	void initWidget();
 	void initCom();
