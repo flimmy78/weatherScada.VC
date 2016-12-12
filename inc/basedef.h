@@ -28,6 +28,8 @@ typedef int    int32;
 											(THREAD)->start()
 
 #define STRLEN(c)	strlen((const char*)(c))
+#define SLEEP_SEC(SEC)		QThread::sleep((SEC))
+#define SLEEP_MSEC(MSEC)	QThread::msleep((MSEC))
 
 #define INI_PATH			"ini/sysconfig.ini"
 #define STRING_GATEWAYID	"gatewayId"
