@@ -11,9 +11,11 @@ readDataDlg::readDataDlg(QWidget *parent) :
 {
     ui->setupUi(this);
 	m_settings = new QSettings(INI_PATH, QSettings::IniFormat);
+	m_seq = 0;
 	initCom();
 	initLogic();
 	initDb();
+	initIntraction();
 	initWidget();
 }
 
@@ -84,17 +86,38 @@ void readDataDlg::initLogic()
 	m_logicObj = new logicObject();
 	m_logicObj->moveToThread(m_logicThread);
 	qRegisterMetaType<comInfoPtr>("comInfoPtr");
-	connect(this, SIGNAL(queryData(const QDate &, const QDate &)), \
-		m_logicObj, SLOT(readHisData(const QDate &, const QDate &)));
-	connect(m_logicObj, SIGNAL(dataReady(const QList<historyDataStr>&, const int8&)), \
-		this, SLOT(getData(const QList<historyDataStr>&, const int8&)));
+	connect(this, SIGNAL(queryData(const QDate, const QDate)), \
+		m_logicObj, SLOT(readHisData(const QDate, const QDate)));
+	connect(m_logicObj, SIGNAL(dataReady(const historyDataStr)), \
+		this, SLOT(getData(const historyDataStr)));
 	connect(this, SIGNAL(signalClosed()), m_logicObj, SIGNAL(finished()));
 	CONNECT_THREAD(m_logicObj, m_logicThread);
 }
 
 void readDataDlg::initDb()
 {
+	m_dbThread = NULL;
+	m_dbObj = NULL;
+	m_dbThread = new QThread;
+	m_dbObj = new sqliteDb();
 
+	connect(this, SIGNAL(signalClosed()), m_dbObj, SIGNAL(finished()));
+	CONNECT_THREAD(m_dbObj, m_dbThread);
+}
+
+void readDataDlg::initIntraction()
+{
+	if (NULL == m_dbObj || NULL == m_logicObj|| NULL == m_comPort) {
+		return;
+	}
+
+	connect(m_logicObj, SIGNAL(readDbData1Node(sysTimeStr)), m_dbObj, SLOT(queryOneRow(sysTimeStr)));
+	connect(m_logicObj, SIGNAL(dataReady(historyDataStr)), m_dbObj, SLOT(insertOneRow(historyDataStr)));
+	connect(m_dbObj, SIGNAL(oneRowExist(historyDataStr)), m_logicObj, SIGNAL(dataReady(historyDataStr)));
+	connect(m_dbObj, SIGNAL(oneRowNotExist(sysTimeStr)), m_logicObj, SLOT(send1stFrameToCom(sysTimeStr)));
+
+	connect(m_logicObj, SIGNAL(readComData(QByteArray)), m_comPort, SLOT(sendBuf(QByteArray)));
+	connect(m_comPort, SIGNAL(readBufReady(QByteArray)), m_logicObj, SLOT(readFrameFromCom(QByteArray)));
 }
 
 void readDataDlg::initWidget()
@@ -325,19 +348,64 @@ void readDataDlg::on_btnReadData_clicked()
 			QObject::tr("open com first!"));
 		return;
 	}
+	m_seq = 0;
+	emptyTable();
 	emit queryData(start, end);
 }
 
-void readDataDlg::getData(const QList<historyDataStr>& hisList, const int8& err)
+void readDataDlg::emptyTable()
 {
-	switch (err) {
-	case ERR_CRITICAL:
+
+}
+
+void readDataDlg::getData(const historyDataStr hisData)
+{
+	int rowNO = TABLE_DEFAULT_ROWS + m_seq;
+	QString text;
+	float value;
+
+	ui->tableWidget->setRowCount(rowNO + 1);
+	for (int i = 0; i < TABLE_COLS; i++) {
+		ui->tableWidget->setItem(rowNO, i, new QTableWidgetItem(QString("")));
+	}
+	ui->tableWidget->item(rowNO, COL_SEQ)->setText(QString::number(m_seq));
+	text.sprintf("20%02x-%02x-%02x", hisData.timeNode.u8year, \
+		hisData.timeNode.u8month, hisData.timeNode.u8day);
+	ui->tableWidget->item(rowNO, COL_DATE)->setText(text);
+	text.sprintf("%02x:%02x:%02x", hisData.timeNode.u8hour, \
+		hisData.timeNode.u8minute, hisData.timeNode.u8second);
+	ui->tableWidget->item(rowNO, COL_TIMENODE)->setText(text);
+	ui->tableWidget->item(rowNO, COL_TEMPIN)->setText(QString::number(hisData.tIn));
+	ui->tableWidget->item(rowNO, COL_TEMPOUT)->setText(QString::number(hisData.tOut));
+	ui->tableWidget->item(rowNO, COL_TEMPAVG)->setText(QString::number(hisData.tAvg));
+	ui->tableWidget->item(rowNO, COL_FLOWRATE)->setText(QString::number(hisData.flowRate));
+	ui->tableWidget->item(rowNO, COL_POWER)->setText(QString::number(hisData.power));
+	ui->tableWidget->item(rowNO, COL_ACCUMFLOW)->setText(QString::number(hisData.accumFlow));
+	ui->tableWidget->item(rowNO, COL_ENERGY)->setText(QString::number(hisData.energy));
+	if (m_seq) {
+		value = (hisData.accumFlow - ui->tableWidget->item(rowNO - 1, COL_ACCUMFLOW)->text().toFloat());
+		ui->tableWidget->item(rowNO, COL_DELTAFLOW)->setText(QString::number(value));
+		value = (hisData.energy - ui->tableWidget->item(rowNO - 1, COL_ENERGY)->text().toFloat());
+		ui->tableWidget->item(rowNO, COL_DELTAENERGY)->setText(QString::number(value));
+	}
+	ui->tableWidget->item(rowNO, COL_TROOM1)->setText(QString::number(hisData.inTemp1));
+	ui->tableWidget->item(rowNO, COL_TROOM2)->setText(QString::number(hisData.inTemp2));
+	ui->tableWidget->item(rowNO, COL_TAIR1)->setText(QString::number(hisData.outTemp1));
+	ui->tableWidget->item(rowNO, COL_TAIR2)->setText(QString::number(hisData.outTemp2));
+	ui->tableWidget->item(rowNO, COL_WINDRATE)->setText(QString::number(hisData.windRate));
+	ui->tableWidget->item(rowNO, COL_ROOMAREA)->setText(QString::number(hisData.roomArea));
+	switch (hisData.weather) {
+	case weather_fine:
+		ui->tableWidget->item(rowNO, COL_WFINE)->setText("1");
 		break;
-	case ERR_OVERTIME:
+	case weather_cloudy:
+		ui->tableWidget->item(rowNO, COL_WCLOUDY)->setText("1");
 		break;
-	case NO_ERR:
+	case weather_shade:
+		ui->tableWidget->item(rowNO, COL_WSHADE)->setText("1");
 		break;
 	default:
 		break;
 	}
+	m_seq++;
 }

@@ -1,9 +1,9 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
-//#ifdef __cplusplus
-//extern "C" {
-//#endif //__cplusplus
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
 
 #include "basedef.h"
 
@@ -338,12 +338,14 @@ typedef tempControl_messure_remote_str* tempControl_messure_remote_ptr;
 #pragma pack(pop)
 
 extern uint8 protoR_readHisData(uint8* buf, uint16* bufSize, sysTimePtr timeNode);
-
+extern uint8 protoR_readMultiInfo(uint8* buf, uint16* bufSize, uint8* seq);
+extern uint8 protoA_hisData(uint8* buf, const uint16 bufSize, uint16* hisDataCnt, \
+	hisdata_head_ptr pBodyHead, tempControl_messure_hisdata_ptr pHisData);
 #endif//GATEWAY_PROTOCOL_VER==0x03
 #endif // GATEWAY_PROTOCOL_VER
 
-//#ifdef __cplusplus
-//}
-//#endif//__cplusplus
+#ifdef __cplusplus
+}
+#endif//__cplusplus
 
 #endif // PROTOCOL_H

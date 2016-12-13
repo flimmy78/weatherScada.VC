@@ -5,6 +5,10 @@
 #include <QThread>
 #include <QDate>
 #include "basedef.h"
+#include "protocol.h"
+#include <QSettings>
+#include <QDebug>
+#include "func.h"
 
 #define TWO_THOUSAND	2000
 
@@ -27,28 +31,33 @@ public:
 	logicObject(QObject* parent = 0);
 	~logicObject();
 
+private:
+	QList<tempControl_messure_hisdata_str> m_ctlMessureList;//用于缓存集中器读取上来的, 温控计量一体化格式的历史数据
+
+	void toStdHisData(historyDataPtr);
 signals:
 	void finished();
 
 	void dateError();
-	void dataReady(const QList<historyDataStr>&, const int8&);
+	void dataReady(historyDataStr);
 
-	void readDbData1Node(sysTimePtr);//读取数据库中的一个时间点的数据, 由this.readHisData发送, 与db.queryOneRow相连
-	void readComData(QByteArray);//向串口发送数据帧, 由this.send1stFrameToCom发送, 与com.sendBuf相连
+	void readDbData1Node(sysTimeStr);//读取数据库中的一个时间点的数据, 由this.readHisData发送, 与db.queryOneRow相连
+	void readComData(QByteArray);//向串口发送数据帧, 与com.sendBuf相连
 
-	void readNextFrame(uint8&);//读取下一帧
+	void readFirstFrame(QByteArray);
+	void readNextFrame(uint8);//读取下一帧
 public slots :
 	void startThread();
-	void readHisData(const QDate &, const QDate &);
-	void readFrameFromCom(QByteArray&);//用于接收来自串口的数据, 与com.readBufReady相连
+	void readHisData(const QDate, const QDate);
+	void readFrameFromCom(QByteArray);//用于接收来自串口的数据, 与com.readBufReady相连
 
 	/*
 	 * 当本地数据库没有当前时间点数据时, 向串口发送请求.
 	 * 集中器中的一个时间点的历史数据, 有可能分很多帧
 	 * 发送给上位机, 所以要区分是第一帧还是后续帧.
 	 */
-	void send1stFrameToCom(sysTimePtr);//第一帧命令, 与db.oneRowNotExist(sysTimePtr)相连
-	void sendMultiFrameToCom(uint8&);//后续帧命令, 与this.readNextFrame(uint8&)相连
+	void send1stFrameToCom(sysTimeStr);//第一帧命令, 与db.oneRowNotExist(sysTimePtr)相连
+	void sendMultiFrameToCom(uint8);//后续帧命令, 与this.readNextFrame(uint8&)相连
 };
 
 #endif // LOGIC_H

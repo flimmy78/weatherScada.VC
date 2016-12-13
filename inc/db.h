@@ -45,19 +45,20 @@ public:
 private:
 	QSqlDatabase m_sqlDb;
 
+signals:
+	void finished();
+	void oneRowExist(historyDataStr);
+	void oneRowNotExist(sysTimeStr);
+	void insertOK();
+	void insertFail(sysTimeStr);
+
 public slots:
 	void startThread();
 	bool openDB();
 	void closeDB();
 
-	void queryOneRow(sysTimePtr);
-	void insertOneRow(historyDataPtr);
-signals:
-	void finished();
-	void oneRowExist(historyDataPtr);
-	void oneRowNotExist(sysTimePtr);
-	void insertOK();
-	void insertFail(sysTimePtr);
+	void queryOneRow(sysTimeStr);
+	void insertOneRow(historyDataStr);
 };
 
 #endif // DB_H

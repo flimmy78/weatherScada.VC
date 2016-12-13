@@ -33,6 +33,7 @@ extern void supplementToLenWith0(uint8* s, uint16 len);
 extern void supplementTo12(uint8* data);
 extern void getSvrId(uint8* svrId);
 extern void getGatewayId(uint8* gateId);
+extern uint32 bcdToInt(uint8* buf, uint16 bufSize, uint8 needInv);
 //#ifdef __cplusplus
 //}
 //#endif

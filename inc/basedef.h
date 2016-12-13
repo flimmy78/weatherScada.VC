@@ -45,10 +45,13 @@ typedef int    int32;
 #define STRING_PARITY		"parity"
 #define STRING_STOPBITS		"stopbits"
 
+#define MODBUS_WIND_TYPE	0x01
+
 typedef enum {
 	weather_fine = 0,	//天气晴
 	weather_cloudy,		//天气多云
-	weather_shade		//天气阴
+	weather_shade,		//天气阴
+	weather_noData		//无数据
 }weatherEnum;
 
 #pragma	pack(push)

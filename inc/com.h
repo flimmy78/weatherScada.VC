@@ -42,7 +42,7 @@ public slots :
 	void openCom(comInfoPtr);
 	void closeCom();
 
-	void sendBuf(QByteArray buf);
+	void sendBuf(QByteArray);
 	void readBuf();
 	void sendData();
 };

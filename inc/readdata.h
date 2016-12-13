@@ -12,7 +12,7 @@
 #include "db.h"
 #include "ui_readdata.h"
 
-#define	TABLE_DEFAULT_ROWS	10
+#define	TABLE_DEFAULT_ROWS	2
 #define	TABLE_COLS			21
 
 typedef enum {
@@ -67,25 +67,28 @@ private:
 	QList<QSerialPort::DataBits>	m_databitList;
 	QList<QSerialPort::Parity>		m_parityList;
 	QList<QSerialPort::StopBits>	m_stopbitList;
+
+	uint32 m_seq;//当前行的序列号
 private slots:
 	void initWidget();
 	void initCom();
 	void initLogic();
 	void initDb();
+	void initIntraction();//把logic, db, com三个模块的信号槽串联起来
 
 	void on_btnOpenCom_clicked();
 	void on_btnReadData_clicked();
-
+	void emptyTable();
 public slots:
 	void showEvent(QShowEvent* e);
 	void closeEvent(QCloseEvent* e);
-	void getData(const QList<historyDataStr>& hisList, const int8& err);
+	void getData(const historyDataStr);
 
 	void openComOK();
 	void openComFail();
 signals:
 	void signalClosed();
-	void queryData(const QDate &start, const QDate &end);
+	void queryData(const QDate start, const QDate end);
 	void openCom(comInfoPtr);
 };
 

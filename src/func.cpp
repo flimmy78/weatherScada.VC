@@ -161,3 +161,19 @@ void getGatewayId(uint8* gateId)
 {
 	getId(gateId, STRING_SVRID);
 }
+
+uint32 bcdToInt(uint8* buf, uint16 bufSize, uint8 needInv)
+{
+	uint32 value = 0;
+	uint16 i = 0;
+	uint8 d = 0;
+
+	if (needInv) {
+		inverseArray(buf, bufSize);
+	}
+	for (i = 0;i < bufSize;i++) {
+		d = BCD_TO_HEX(buf[i]);
+		value = d + value * 100;
+	}
+	return value;
+}
