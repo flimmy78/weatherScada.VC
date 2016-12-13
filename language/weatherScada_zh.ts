@@ -80,17 +80,17 @@
     <message>
         <location filename="../src/readdata.cpp" line="152"/>
         <source>temp in</source>
-        <translation>T&lt;font size=4&gt;&lt;b&gt;g&lt;/b&gt;&lt;/font&gt;g</translation>
+        <translation>Tg</translation>
     </message>
     <message>
         <location filename="../src/readdata.cpp" line="158"/>
         <source>temp out</source>
-        <translation>T&lt;font size=4&gt;&lt;b&gt;h&lt;/b&gt;&lt;/font&gt;</translation>
+        <translation>Th</translation>
     </message>
     <message>
         <location filename="../src/readdata.cpp" line="164"/>
         <source>temp avg</source>
-        <translation>T&lt;font size=4&gt;&lt;b&gt;pj&lt;/b&gt;&lt;/font&gt;</translation>
+        <translation>Tpj</translation>
     </message>
     <message>
         <location filename="../src/readdata.cpp" line="170"/>
@@ -130,12 +130,12 @@
     <message>
         <location filename="../src/readdata.cpp" line="213"/>
         <source>room1</source>
-        <translation>T&lt;font size=4&gt;&lt;b&gt;n1&lt;/b&gt;&lt;/font&gt;</translation>
+        <translation>Tn1</translation>
     </message>
     <message>
         <location filename="../src/readdata.cpp" line="219"/>
         <source>room2</source>
-        <translation>T&lt;font size=4&gt;&lt;b&gt;n2&lt;/b&gt;&lt;/font&gt;</translation>
+        <translation>Tn2</translation>
     </message>
     <message>
         <location filename="../src/readdata.cpp" line="226"/>
@@ -145,12 +145,12 @@
     <message>
         <location filename="../src/readdata.cpp" line="232"/>
         <source>airtemp1</source>
-        <translation>T&lt;font size=4&gt;&lt;b&gt;w1&lt;/b&gt;&lt;/font&gt;</translation>
+        <translation>Tw1</translation>
     </message>
     <message>
         <location filename="../src/readdata.cpp" line="238"/>
         <source>airtemp2</source>
-        <translation>T&lt;font size=4&gt;&lt;b&gt;w2&lt;/b&gt;&lt;/font&gt;</translation>
+        <translation>Tw2</translation>
     </message>
     <message>
         <location filename="../src/readdata.cpp" line="245"/>
