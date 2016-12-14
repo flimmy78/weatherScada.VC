@@ -10,7 +10,6 @@
 #include <QDebug>
 #include "func.h"
 
-#define TWO_THOUSAND	2000
 
 /************************************************************************/
 /*     logic模块是readData, com, db, 三者之间的桥梁.

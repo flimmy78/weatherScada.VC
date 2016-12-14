@@ -35,7 +35,7 @@ void logicObject::readHisData(const QDate startDate, const QDate endDate)
 	m_ctlMessureList.clear();
 	for (int i = 0;i <= dayCnt;i++) {
 		hisDate = startDate.addDays(i);
-		year = (hisDate.year() - TWO_THOUSAND);//因为给宫主任安装设备的日期是2016年, 所以设备不可能存储早于2000年的数据
+		year = (hisDate.year() - TWO_THOUSAND_YEAR);//因为给宫主任安装设备的日期是2016年, 所以设备不可能存储早于2000年的数据
 		month = hisDate.month();
 		day = hisDate.day();
 		timeNode.u8year = HEX_TO_BCD(year);
@@ -57,6 +57,9 @@ void logicObject::readFrameFromCom(QByteArray b)
 	historyDataStr stdHisData = { 0 };
 	uint8* pFrame = (uint8*)b.data();
 
+	if (b.isEmpty()) {
+		return;
+	}
 	protoA_hisData(pFrame, b.count(), &hisDataCnt, \
 		&BodyHeadStr, hisDataStr);
 	for (int i = 0;i < hisDataCnt;i++) {
@@ -143,9 +146,8 @@ void logicObject::send1stFrameToCom(sysTimeStr timeNode)
 	hisdata_head_str BodyHeadStr = { 0 };
 	QByteArray b;
 
-	qDebug() << "send1stFrameToCom started";
 	protoR_readHisData(buf, &bufSize, &timeNode);
-	b.append((int8*)buf);
+	b = QByteArray((char*)buf, bufSize);
 	emit readComData(b);
 	qDebug() << "readComData emitted";
 }
@@ -157,6 +159,6 @@ void logicObject::sendMultiFrameToCom(uint8 seq)
 	QByteArray b;
 
 	protoR_readMultiInfo(buf, &bufSize, &seq);
-	b.append((int8*)buf);
+	b = QByteArray((char*)buf, bufSize);
 	emit readComData(b);
 }

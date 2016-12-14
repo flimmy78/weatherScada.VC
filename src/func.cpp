@@ -6,15 +6,22 @@ static const uint8 spaces[] = { ' ', '\t', '\n', '\r', '\0' };
 
 void readSysTime(sysTimePtr pTime)
 {
-	QDate time = QDate::currentDate();
-	QTime current_time = QTime::currentTime();
-
-	pTime->u8year = HEX_TO_BCD(time.year());
-	pTime->u8month = HEX_TO_BCD(time.month());
-	pTime->u8day = HEX_TO_BCD(time.day());
-	pTime->u8hour = HEX_TO_BCD(current_time.hour());
-	pTime->u8minute = HEX_TO_BCD(current_time.minute());
-	pTime->u8second = HEX_TO_BCD(current_time.second());
+	QDate date = QDate::currentDate();
+	QTime time = QTime::currentTime();
+	uint8 value = 0;
+	
+	value = date.year()- TWO_THOUSAND_YEAR;
+	pTime->u8year = HEX_TO_BCD(value);
+	value = date.month();
+	pTime->u8month = HEX_TO_BCD(value);
+	value = date.day();
+	pTime->u8day = HEX_TO_BCD(value);
+	value = time.hour();
+	pTime->u8hour = HEX_TO_BCD(value);
+	value = time.minute();
+	pTime->u8minute = HEX_TO_BCD(value);
+	value = time.second();
+	pTime->u8second = HEX_TO_BCD(value);
 }
 
 uint8 countCheck(uint8*data, uint16 len)
@@ -159,7 +166,7 @@ void getSvrId(uint8* svrId)
 
 void getGatewayId(uint8* gateId)
 {
-	getId(gateId, STRING_SVRID);
+	getId(gateId, STRING_GATEWAYID);
 }
 
 uint32 bcdToInt(uint8* buf, uint16 bufSize, uint8 needInv)

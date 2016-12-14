@@ -29,7 +29,7 @@ public:
 private:
 	QSerialPort* m_serialPort;
 	QByteArray m_readBuf;//Êý¾Ý»º³åÇø
-	QTimer m_timer;
+	QTimer* m_timer;
 
 signals:
 	void openComOK();

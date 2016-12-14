@@ -19,6 +19,8 @@ typedef int    int32;
 #define ERR_OVERTIME	1//³¬Ê±
 #define ERR_CRITICAL	-1//ÖÂÃü´íÎó
 
+#define TWO_THOUSAND_YEAR	2000
+
 #define RELEASE_PNT(POINTER)    if(NULL != POINTER){delete POINTER;POINTER=NULL;}
 
 #define CONNECT_THREAD(OBJECT, THREAD)	connect((THREAD), SIGNAL(started()), (OBJECT), SLOT(startThread()));\
