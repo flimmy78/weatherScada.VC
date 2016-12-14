@@ -24,6 +24,8 @@ private:
 	syconfigDlg* m_syconfigDlgPtr;
 	readDataDlg* m_readDataDlgPtr;
 private slots:
+	void showEvent(QShowEvent *event);
+	void closeEvent(QCloseEvent *event);
 	void on_actionConfig_triggered();
 	void on_actionReadData_triggered();
 	void on_actionExit_triggered();

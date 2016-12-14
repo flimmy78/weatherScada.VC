@@ -16,6 +16,7 @@ sqliteDb::~sqliteDb()
 void sqliteDb::startThread()
 {
 	qDebug() << "sqliteDb::startThread: " << QThread::currentThreadId();
+	openDB();
 }
 
 bool sqliteDb::openDB()
@@ -34,18 +35,22 @@ void sqliteDb::queryOneRow(sysTimeStr timeNode)
 	QSqlQuery query(m_sqlDb);
 	historyDataStr hisData = { 0 };
 
+	qDebug() << "in queryOneRow()";
 	sqlStmt.clear();
-	sqlStmt.sprintf("select count(*) from %s where %s = \'20%02X-%02X-%02X %02X:%02X:%02X.000\'", \
+	sqlStmt.sprintf("select f_id,f_timestamp,f_timenode,f_tIn,f_tOut,f_tAvg,f_flowRate,f_power,f_accumFlow,f_deltaFlow,f_energy,f_deltaEnergy,f_inTemp1,f_inTemp2,f_outTemp1,f_outTemp2,f_windRate,f_weather,f_roomArea from %s where %s = \'20%02X-%02X-%02X %02X:%02X:%02X.000\'", \
 		HIS_TABLE, F_TIMENODE, timeNode.u8year, timeNode.u8month, timeNode.u8day, \
 		timeNode.u8hour, timeNode.u8minute, timeNode.u8second);
 	query.exec(sqlStmt);
 
+	int cnt = query.size();
+
 	if (!query.first())
 	{
 		emit oneRowNotExist(timeNode);
+		qDebug() << "oneRowNotExist emitted";
 		return;
 	}
-	memcpy(&(hisData.timeNode), &timeNode, sizeof(historyDataStr));
+	memcpy(&(hisData.timeNode), &timeNode, sizeof(sysTimeStr));
 	hisData.tIn = query.value(FIELD_TEMPIN).toFloat();
 	hisData.tOut = query.value(FIELD_TEMPOUT).toFloat();
 	hisData.tAvg = query.value(FIELD_TEMPAVG).toFloat();

@@ -40,6 +40,7 @@ signals:
 
 	void dateError();
 	void dataReady(historyDataStr);
+	void readyInsert(historyDataStr);
 
 	void readDbData1Node(sysTimeStr);//读取数据库中的一个时间点的数据, 由this.readHisData发送, 与db.queryOneRow相连
 	void readComData(QByteArray);//向串口发送数据帧, 与com.sendBuf相连

@@ -33,6 +33,7 @@ void comObject::openCom(comInfoPtr pComInfo)
 		emit openComOK();
 	else
 		emit openComFail();
+	connect(m_serialPort, SIGNAL(readyRead()), this, SLOT(readBuf()));
 }
 
 void comObject::startThread()
@@ -59,6 +60,7 @@ void comObject::readBuf()
 
 void comObject::sendBuf(QByteArray buf)
 {
+	qDebug() << "sendBuf get signal";
 	m_readBuf.clear();
 	m_serialPort->write(buf);
 	m_timer.start(TIME_OUT);//等待串口数据全部接收完成

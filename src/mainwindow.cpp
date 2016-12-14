@@ -14,7 +14,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    RELEASE_PNT(ui)
+    
+}
+
+void MainWindow::showEvent(QShowEvent *e)
+{
+	e = e;
+}
+
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+	e = e;
+	RELEASE_PNT(ui)
 	RELEASE_PNT(m_syconfigDlgPtr)
 	RELEASE_PNT(m_readDataDlgPtr)
 }

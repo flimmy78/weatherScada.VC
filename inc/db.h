@@ -49,6 +49,7 @@ signals:
 	void finished();
 	void oneRowExist(historyDataStr);
 	void oneRowNotExist(sysTimeStr);
+
 	void insertOK();
 	void insertFail(sysTimeStr);
 

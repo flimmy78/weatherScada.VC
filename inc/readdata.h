@@ -82,7 +82,7 @@ private slots:
 public slots:
 	void showEvent(QShowEvent* e);
 	void closeEvent(QCloseEvent* e);
-	void getData(const historyDataStr);
+	void getData(historyDataStr);
 
 	void openComOK();
 	void openComFail();
