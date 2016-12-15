@@ -18,7 +18,7 @@ typedef int    int32;
 #define NO_ERR			0//ÎÞ´íÎó
 #define ERR_OVERTIME	1//³¬Ê±
 #define ERR_CRITICAL	-1//ÖÂÃü´íÎó
-
+#define TIME_OUT	1500
 #define TWO_THOUSAND_YEAR	2000
 
 #define RELEASE_PNT(POINTER)    if(NULL != POINTER){delete POINTER;POINTER=NULL;}

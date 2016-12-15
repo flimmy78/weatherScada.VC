@@ -42,7 +42,9 @@ void comObject::startThread()
 {
 	qDebug() << "### comObject::startThread thread:" << QThread::currentThreadId();
 	m_readBuf.clear();
-	m_timer = new QTimer;
+	if (NULL == m_timer)
+		m_timer = new QTimer;
+
 	m_timer->setInterval(TIME_OUT);
 	m_timer->stop();
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(sendData()));
@@ -73,6 +75,7 @@ void comObject::sendBuf(QByteArray buf)
 
 void comObject::sendData()
 {
+	qDebug() << "comObject::sendData" << QThread::currentThreadId();
 	m_timer->stop();
 	emit readBufReady(m_readBuf);
 }

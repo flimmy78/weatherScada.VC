@@ -14,6 +14,7 @@ logicObject::~logicObject()
 void logicObject::startThread()
 {
 	qDebug() << "logicObject startThread: " << QThread::currentThreadId();
+	m_readWriteCom = 1;
 	connect(this, SIGNAL(readNextFrame(uint8)), this, SLOT(sendMultiFrameToCom(uint8)));
 }
 
@@ -60,6 +61,15 @@ void logicObject::readFrameFromCom(QByteArray b)
 	if (b.isEmpty()) {
 		return;
 	}
+
+	QString log;
+	QString s;
+
+	for (int i = 0;i < b.count();i++) {
+		s.sprintf("%02X ", b.at(i));
+		log.append(s);
+	}
+	qDebug() << log;
 	protoA_hisData(pFrame, b.count(), &hisDataCnt, \
 		&BodyHeadStr, hisDataStr);
 	for (int i = 0;i < hisDataCnt;i++) {
@@ -69,10 +79,13 @@ void logicObject::readFrameFromCom(QByteArray b)
 		BodyHeadStr.seq++;
 		emit readNextFrame(BodyHeadStr.seq);
 	} else {
+		memcpy(&(stdHisData.timeNode), &m_timeNode, sizeof(sysTimeStr));
 		toStdHisData(&stdHisData);
 		emit dataReady(stdHisData);
 		emit readyInsert(stdHisData);
 	}
+	qDebug() << "logicObject::readFrameFromCom";
+	m_readWriteCom++;
 }
 
 void logicObject::toStdHisData(historyDataPtr pHisData)
@@ -146,9 +159,15 @@ void logicObject::send1stFrameToCom(sysTimeStr timeNode)
 	hisdata_head_str BodyHeadStr = { 0 };
 	QByteArray b;
 
+	memcpy(&m_timeNode, &timeNode, sizeof(sysTimeStr));
+	if (m_readWriteCom == 0) {
+		SLEEP_MSEC(2* TIME_OUT);
+	}
+
 	protoR_readHisData(buf, &bufSize, &timeNode);
 	b = QByteArray((char*)buf, bufSize);
 	emit readComData(b);
+	m_readWriteCom--;
 	qDebug() << "readComData emitted";
 }
 
@@ -158,7 +177,12 @@ void logicObject::sendMultiFrameToCom(uint8 seq)
 	uint16 bufSize = 0;
 	QByteArray b;
 
+	if (m_readWriteCom == 0) {
+		SLEEP_MSEC(2 * TIME_OUT);
+	}
 	protoR_readMultiInfo(buf, &bufSize, &seq);
 	b = QByteArray((char*)buf, bufSize);
 	emit readComData(b);
+	m_readWriteCom--;
+	qDebug() << "readComData emitted";
 }

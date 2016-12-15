@@ -9,7 +9,6 @@
 #include <QSerialPortInfo>
 #include "basedef.h"
 
-#define TIME_OUT	1500
 
 typedef struct {
 	QString					portName;
