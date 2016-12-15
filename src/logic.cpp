@@ -3,7 +3,7 @@
 
 logicObject::logicObject(QObject* parent) : QObject(parent)
 {
-
+	m_sendSignalTimer = NULL;
 }
 
 logicObject::~logicObject()
@@ -16,6 +16,11 @@ void logicObject::startThread()
 	qDebug() << "logicObject startThread: " << QThread::currentThreadId();
 	m_readWriteCom = 1;
 	connect(this, SIGNAL(readNextFrame(uint8)), this, SLOT(sendMultiFrameToCom(uint8)));
+
+	if (m_sendSignalTimer) {
+		delete m_sendSignalTimer;
+	}
+	m_sendSignalTimer = new QTimer;
 }
 
 void logicObject::readHisData(const QDate startDate, const QDate endDate)

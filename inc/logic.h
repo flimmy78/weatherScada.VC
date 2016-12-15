@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QThread>
 #include <QDate>
+#include <QTimer>
 #include "basedef.h"
 #include "protocol.h"
 #include <QSettings>
@@ -34,6 +35,8 @@ private:
 	QList<tempControl_messure_hisdata_str> m_ctlMessureList;//用于缓存集中器读取上来的, 温控计量一体化格式的历史数据
 	int m_readWriteCom;
 	sysTimeStr m_timeNode;
+	QTimer* m_sendSignalTimer;
+
 	void toStdHisData(historyDataPtr);
 signals:
 	void finished();

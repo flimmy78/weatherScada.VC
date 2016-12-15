@@ -393,9 +393,9 @@ void readDataDlg::getData(historyDataStr hisData)
 	}
 	ui->tableWidget->item(rowNO, COL_TROOM1)->setText(QString::number(hisData.inTemp1));
 	ui->tableWidget->item(rowNO, COL_TROOM2)->setText(QString::number(hisData.inTemp2));
-	ui->tableWidget->item(rowNO, COL_TAIR1)->setText(QString::number(hisData.outTemp1));
-	ui->tableWidget->item(rowNO, COL_TAIR2)->setText(QString::number(hisData.outTemp2));
-	ui->tableWidget->item(rowNO, COL_WINDRATE)->setText(QString::number(hisData.windRate));
+	ui->tableWidget->item(rowNO, COL_TAIR1)->setText(QString::number(hisData.outTemp1>150.0?(hisData.outTemp1):(150- hisData.outTemp1)));
+	ui->tableWidget->item(rowNO, COL_TAIR2)->setText(QString::number(hisData.outTemp2>150.0 ? (hisData.outTemp2) : (150 - hisData.outTemp2)));
+	ui->tableWidget->item(rowNO, COL_WINDRATE)->setText(QString::number(hisData.windRate, 'g', 4));
 	ui->tableWidget->item(rowNO, COL_ROOMAREA)->setText(QString::number(hisData.roomArea));
 	switch (hisData.weather) {
 	case weather_fine:
