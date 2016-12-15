@@ -33,26 +33,29 @@ public:
 
 private:
 	QList<tempControl_messure_hisdata_str> m_ctlMessureList;//用于缓存集中器读取上来的, 温控计量一体化格式的历史数据
-	int m_readWriteCom;
 	sysTimeStr m_timeNode;
+	QList<sysTimeStr> m_timeNodeList;
 	QTimer* m_sendSignalTimer;
 
 	void toStdHisData(historyDataPtr);
 signals:
 	void finished();
 
+	void timeNodeCalcDone(historyDataStr);
+	void allDataQueryDone();
 	void dateError();
 	void dataReady(historyDataStr);
-	void readyInsert(historyDataStr);
 
 	void readDbData1Node(sysTimeStr);//读取数据库中的一个时间点的数据, 由this.readHisData发送, 与db.queryOneRow相连
 	void readComData(QByteArray);//向串口发送数据帧, 与com.sendBuf相连
+	void comEmpty(historyDataStr);
 
 	void readFirstFrame(QByteArray);
 	void readNextFrame(uint8);//读取下一帧
 public slots :
 	void startThread();
 	void readHisData(const QDate, const QDate);
+	void read1NodeData(historyDataStr);
 	void readFrameFromCom(QByteArray);//用于接收来自串口的数据, 与com.readBufReady相连
 
 	/*

@@ -8,7 +8,7 @@ QT       += core gui sql serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += console debug
+CONFIG += console debug warn_on
 
 TARGET = weatherScada
 TEMPLATE = app
@@ -33,7 +33,7 @@ HEADERS  += inc/mainwindow.h \
     inc/com.h \
     inc/logic.h
 
-INCLUDEPATH += 	inc
+INCLUDEPATH += 	inc/
 
 FORMS    += ui/mainwindow.ui \
     ui/sysconfig.ui \
@@ -42,7 +42,6 @@ FORMS    += ui/mainwindow.ui \
 RESOURCES += weatherScada.qrc
 
 DESTDIR  = obj/
-
-OBJECTS_DIR = $$PWD/obj
-
+OBJECTS_DIR = obj/
+UI_DIR = inc/
 TRANSLATIONS += ./language/weatherScada_en.ts ./language/weatherScada_zh.ts

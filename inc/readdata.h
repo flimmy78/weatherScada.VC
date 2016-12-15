@@ -78,7 +78,6 @@ private slots:
 
 	void on_btnOpenCom_clicked();
 	void on_btnReadData_clicked();
-	void emptyTable();
 public slots:
 	void showEvent(QShowEvent* e);
 	void closeEvent(QCloseEvent* e);

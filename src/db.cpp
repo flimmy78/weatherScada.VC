@@ -95,6 +95,8 @@ void sqliteDb::insertOneRow(historyDataStr hisData)
 	sqlStmt.append(QString("%1,").arg((int)(hisData.weather), 0, 10));
 	sqlStmt.append(QString("%1)").arg(hisData.roomArea, 6, 'g', 6));
 
+	//应该先作检查, 如果已存在当前时间点的历史数据, 则更新; 否则插入. 待完善.
+
 	if (query.exec(sqlStmt)) {
 		emit insertOK();
 	} else {

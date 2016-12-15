@@ -14,45 +14,57 @@ logicObject::~logicObject()
 void logicObject::startThread()
 {
 	qDebug() << "logicObject startThread: " << QThread::currentThreadId();
-	m_readWriteCom = 1;
+	connect(this, SIGNAL(timeNodeCalcDone(historyDataStr)), this, SLOT(read1NodeData(historyDataStr)));
+	connect(this, SIGNAL(dataReady(historyDataStr)), this, SLOT(read1NodeData(historyDataStr)));
 	connect(this, SIGNAL(readNextFrame(uint8)), this, SLOT(sendMultiFrameToCom(uint8)));
-
-	if (m_sendSignalTimer) {
+	connect(this, SIGNAL(comEmpty(historyDataStr)), this, SLOT(read1NodeData(historyDataStr)));
+	if (m_sendSignalTimer)
 		delete m_sendSignalTimer;
-	}
 	m_sendSignalTimer = new QTimer;
 }
 
 void logicObject::readHisData(const QDate startDate, const QDate endDate)
 {
-	sysTimeStr timeNode = { 0 };
 	QDate hisDate;//读取历史数据的时间点日期
 	int year = 0;
 	int month = 0;
 	int day = 0;
 	int dayCnt = startDate.daysTo(endDate);
-	uint8 hourNode = 0;//每天固定读取历史数据的时间点
+	historyDataStr data = { 0 };
 
 	if (startDate > endDate) {//判断时期区间的合法性
 		emit dateError();
 		return;
 	}
 
-	m_ctlMessureList.clear();
+	m_timeNodeList.clear();
 	for (int i = 0;i <= dayCnt;i++) {
 		hisDate = startDate.addDays(i);
-		year = (hisDate.year() - TWO_THOUSAND_YEAR);//因为给宫主任安装设备的日期是2016年, 所以设备不可能存储早于2000年的数据
+		year = (hisDate.year() - TWO_THOUSAND_YEAR);
 		month = hisDate.month();
 		day = hisDate.day();
-		timeNode.u8year = HEX_TO_BCD(year);
-		timeNode.u8month = HEX_TO_BCD(month);
-		timeNode.u8day = HEX_TO_BCD(day);
 		for (int j = 0;j < 24;j++) {
+			sysTimeStr timeNode = { 0 };
+			timeNode.u8year = HEX_TO_BCD(year);
+			timeNode.u8month = HEX_TO_BCD(month);
+			timeNode.u8day = HEX_TO_BCD(day);
 			timeNode.u8hour = HEX_TO_BCD(j);
-			emit readDbData1Node(timeNode);
-			SLEEP_MSEC(200);//防止操作过快, 隔一段时间发送一个信号
+			m_timeNodeList.append(timeNode);
 		}
 	}
+	emit timeNodeCalcDone(data);
+}
+
+void logicObject::read1NodeData(historyDataStr)
+{
+	if (m_timeNodeList.isEmpty()) {
+		emit allDataQueryDone();
+		return;
+	}
+	m_ctlMessureList.clear();
+	sysTimeStr m_timeNode = m_timeNodeList.first();
+	m_timeNodeList.removeFirst();
+	emit readDbData1Node(m_timeNode);
 }
 
 void logicObject::readFrameFromCom(QByteArray b)
@@ -63,18 +75,12 @@ void logicObject::readFrameFromCom(QByteArray b)
 	historyDataStr stdHisData = { 0 };
 	uint8* pFrame = (uint8*)b.data();
 
+	memcpy(&(stdHisData.timeNode), &m_timeNode, sizeof(sysTimeStr));
 	if (b.isEmpty()) {
+		emit comEmpty(stdHisData);
 		return;
 	}
 
-	QString log;
-	QString s;
-
-	for (int i = 0;i < b.count();i++) {
-		s.sprintf("%02X ", b.at(i));
-		log.append(s);
-	}
-	qDebug() << log;
 	protoA_hisData(pFrame, b.count(), &hisDataCnt, \
 		&BodyHeadStr, hisDataStr);
 	for (int i = 0;i < hisDataCnt;i++) {
@@ -84,13 +90,10 @@ void logicObject::readFrameFromCom(QByteArray b)
 		BodyHeadStr.seq++;
 		emit readNextFrame(BodyHeadStr.seq);
 	} else {
-		memcpy(&(stdHisData.timeNode), &m_timeNode, sizeof(sysTimeStr));
 		toStdHisData(&stdHisData);
 		emit dataReady(stdHisData);
-		emit readyInsert(stdHisData);
 	}
 	qDebug() << "logicObject::readFrameFromCom";
-	m_readWriteCom++;
 }
 
 void logicObject::toStdHisData(historyDataPtr pHisData)
@@ -165,14 +168,10 @@ void logicObject::send1stFrameToCom(sysTimeStr timeNode)
 	QByteArray b;
 
 	memcpy(&m_timeNode, &timeNode, sizeof(sysTimeStr));
-	if (m_readWriteCom == 0) {
-		SLEEP_MSEC(2* TIME_OUT);
-	}
 
 	protoR_readHisData(buf, &bufSize, &timeNode);
 	b = QByteArray((char*)buf, bufSize);
 	emit readComData(b);
-	m_readWriteCom--;
 	qDebug() << "readComData emitted";
 }
 
@@ -182,12 +181,8 @@ void logicObject::sendMultiFrameToCom(uint8 seq)
 	uint16 bufSize = 0;
 	QByteArray b;
 
-	if (m_readWriteCom == 0) {
-		SLEEP_MSEC(2 * TIME_OUT);
-	}
 	protoR_readMultiInfo(buf, &bufSize, &seq);
 	b = QByteArray((char*)buf, bufSize);
 	emit readComData(b);
-	m_readWriteCom--;
 	qDebug() << "readComData emitted";
 }

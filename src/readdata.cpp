@@ -93,6 +93,8 @@ void readDataDlg::initLogic()
 		m_logicObj, SLOT(readHisData(const QDate, const QDate)));
 	connect(m_logicObj, SIGNAL(dataReady(historyDataStr)), \
 		this, SLOT(getData(historyDataStr)));
+	connect(m_logicObj, SIGNAL(comEmpty(historyDataStr)), \
+		this, SLOT(getData(historyDataStr)));
 	connect(this, SIGNAL(signalClosed()), m_logicObj, SIGNAL(finished()));
 	CONNECT_THREAD(m_logicObj, m_logicThread);
 }
@@ -105,7 +107,7 @@ void readDataDlg::initDb()
 	m_dbObj = new sqliteDb();
 
 	connect(this, SIGNAL(signalClosed()), m_dbObj, SIGNAL(finished()));
-	connect(m_dbObj, SIGNAL(oneRowExist(historyDataStr)), this, SLOT(getData(historyDataStr)));
+	
 	CONNECT_THREAD(m_dbObj, m_dbThread);
 }
 
@@ -118,7 +120,7 @@ void readDataDlg::initIntraction()
 	connect(m_logicObj, SIGNAL(readDbData1Node(sysTimeStr)), m_dbObj, SLOT(queryOneRow(sysTimeStr)));
 	connect(m_logicObj, SIGNAL(dataReady(historyDataStr)), m_dbObj, SLOT(insertOneRow(historyDataStr)));
 	connect(m_dbObj, SIGNAL(oneRowNotExist(sysTimeStr)), m_logicObj, SLOT(send1stFrameToCom(sysTimeStr)));
-
+	connect(m_dbObj, SIGNAL(oneRowExist(historyDataStr)), m_logicObj, SIGNAL(dataReady(historyDataStr)));
 	connect(m_logicObj, SIGNAL(readComData(QByteArray)), m_comPort, SLOT(sendBuf(QByteArray)));
 	connect(m_comPort, SIGNAL(readBufReady(QByteArray)), m_logicObj, SLOT(readFrameFromCom(QByteArray)));
 }
@@ -352,13 +354,7 @@ void readDataDlg::on_btnReadData_clicked()
 		return;
 	}
 	m_seq = 0;
-	emptyTable();
 	emit queryData(start, end);
-}
-
-void readDataDlg::emptyTable()
-{
-
 }
 
 void readDataDlg::getData(historyDataStr hisData)
