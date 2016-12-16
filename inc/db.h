@@ -58,6 +58,7 @@ public slots:
 
 	void queryOneRow(sysTimeStr);
 	void insertOneRow(historyDataStr);
+	void updateOneRow(historyDataStr);
 
 private slots:
 	bool openDB();

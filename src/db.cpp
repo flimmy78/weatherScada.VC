@@ -103,3 +103,12 @@ void sqliteDb::insertOneRow(historyDataStr hisData)
 		emit insertFail((hisData.timeNode));
 	}
 }
+
+void sqliteDb::updateOneRow(historyDataStr)
+{
+	QString sqlStmt;
+	QSqlQuery query(m_sqlDb);
+
+	sqlStmt.clear();
+	sqlStmt.sprintf("update %s set ");
+}
