@@ -2,6 +2,8 @@
 #define READDATA_H
 
 #include <QWidget>
+#include <QRadioButton>
+#include <QButtonGroup>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QSettings>
@@ -52,6 +54,7 @@ private:
     Ui::readDataForm *ui;
 
 	bool m_comIsOpen;
+	uint32 m_seq;//当前行的序列号
 	QSettings* m_settings;
 
 	QThread* m_comThread;
@@ -68,7 +71,6 @@ private:
 	QList<QSerialPort::Parity>		m_parityList;
 	QList<QSerialPort::StopBits>	m_stopbitList;
 
-	uint32 m_seq;//当前行的序列号
 private slots:
 	void initWidget();
 	void initCom();
@@ -78,6 +80,10 @@ private slots:
 
 	void on_btnOpenCom_clicked();
 	void on_btnReadData_clicked();
+	void on_btnSave_clicked();
+	void on_btnExit_clicked();
+	void resizeEvent(QResizeEvent * event);
+	void newTblRow(int);
 public slots:
 	void showEvent(QShowEvent* e);
 	void closeEvent(QCloseEvent* e);
@@ -85,6 +91,9 @@ public slots:
 
 	void openComOK();
 	void openComFail();
+
+	void allDataQueryDone();
+
 signals:
 	void signalClosed();
 	void queryData(const QDate start, const QDate end);

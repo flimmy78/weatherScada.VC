@@ -40,7 +40,7 @@ FORMS    += ui/mainwindow.ui \
     ui/readdata.ui
 
 RESOURCES += weatherScada.qrc
-
+RC_FILE = weatherScada.rc
 DESTDIR  = obj/
 OBJECTS_DIR = obj/
 UI_DIR = inc/

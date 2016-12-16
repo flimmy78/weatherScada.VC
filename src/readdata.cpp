@@ -12,13 +12,16 @@ readDataDlg::readDataDlg(QWidget *parent) :
     ui->setupUi(this);
 	m_settings = new QSettings(INI_PATH, QSettings::IniFormat);
 	m_seq = 0;
+
+	//注册数据类型, 以便信号槽能发送和接收
 	qRegisterMetaType<comInfoPtr>("comInfoPtr");
 	qRegisterMetaType<historyDataStr>("historyDataStr");
 	qRegisterMetaType<sysTimeStr>("sysTimeStr");
+
 	initCom();
 	initLogic();
 	initDb();
-	initIntraction();
+	initIntraction();//必须在各对象实例化之后调用, 否则各对象的指针都是空的
 	initWidget();
 }
 
@@ -91,11 +94,12 @@ void readDataDlg::initLogic()
 
 	connect(this, SIGNAL(queryData(const QDate, const QDate)), \
 		m_logicObj, SLOT(readHisData(const QDate, const QDate)));
+	connect(this, SIGNAL(signalClosed()), m_logicObj, SIGNAL(finished()));
 	connect(m_logicObj, SIGNAL(dataReady(historyDataStr)), \
 		this, SLOT(getData(historyDataStr)));
 	connect(m_logicObj, SIGNAL(comEmpty(historyDataStr)), \
 		this, SLOT(getData(historyDataStr)));
-	connect(this, SIGNAL(signalClosed()), m_logicObj, SIGNAL(finished()));
+	connect(m_logicObj, SIGNAL(allDataQueryDone()), this, SLOT(allDataQueryDone()));
 	CONNECT_THREAD(m_logicObj, m_logicThread);
 }
 
@@ -107,7 +111,6 @@ void readDataDlg::initDb()
 	m_dbObj = new sqliteDb();
 
 	connect(this, SIGNAL(signalClosed()), m_dbObj, SIGNAL(finished()));
-	
 	CONNECT_THREAD(m_dbObj, m_dbThread);
 }
 
@@ -144,7 +147,7 @@ void readDataDlg::initWidget()
 	for (int i = 0; i < TABLE_DEFAULT_ROWS; i++) {
 		for (int j = 0; j < TABLE_COLS; j++) {
 			ui->tableWidget->setItem(i, j, new QTableWidgetItem(QString("")));
-		}	
+		}
 	}
 
 	ui->tableWidget->setSpan(0, COL_SEQ, 2, 1);
@@ -353,7 +356,13 @@ void readDataDlg::on_btnReadData_clicked()
 			QObject::tr("open com first!"));
 		return;
 	}
+	if (start>end) {
+		QMessageBox::warning(this, QObject::tr("warning"),
+			QObject::tr("start must be ealier than end!"));
+		return;
+	}
 	m_seq = 0;
+	ui->btnReadData->setEnabled(false);
 	emit queryData(start, end);
 }
 
@@ -361,12 +370,12 @@ void readDataDlg::getData(historyDataStr hisData)
 {
 	int rowNO = TABLE_DEFAULT_ROWS + m_seq;
 	QString text;
+	QRadioButton* pRadioBtn;
 	float value;
 
 	ui->tableWidget->setRowCount(rowNO + 1);
-	for (int i = 0; i < TABLE_COLS; i++) {
-		ui->tableWidget->setItem(rowNO, i, new QTableWidgetItem(QString("")));
-	}
+	newTblRow(rowNO);
+
 	ui->tableWidget->item(rowNO, COL_SEQ)->setText(QString::number(m_seq));
 	text.sprintf("20%02x-%02x-%02x", hisData.timeNode.u8year, \
 		hisData.timeNode.u8month, hisData.timeNode.u8day);
@@ -389,22 +398,73 @@ void readDataDlg::getData(historyDataStr hisData)
 	}
 	ui->tableWidget->item(rowNO, COL_TROOM1)->setText(QString::number(hisData.inTemp1));
 	ui->tableWidget->item(rowNO, COL_TROOM2)->setText(QString::number(hisData.inTemp2));
-	ui->tableWidget->item(rowNO, COL_TAIR1)->setText(QString::number(hisData.outTemp1>150.0?(hisData.outTemp1):(150- hisData.outTemp1)));
-	ui->tableWidget->item(rowNO, COL_TAIR2)->setText(QString::number(hisData.outTemp2>150.0 ? (hisData.outTemp2) : (150 - hisData.outTemp2)));
+	ui->tableWidget->item(rowNO, COL_TAIR1)->setText(QString::number(hisData.outTemp1<150.0?(hisData.outTemp1):(150- hisData.outTemp1)));
+	ui->tableWidget->item(rowNO, COL_TAIR2)->setText(QString::number(hisData.outTemp2<150.0 ? (hisData.outTemp2) : (150 - hisData.outTemp2)));
 	ui->tableWidget->item(rowNO, COL_WINDRATE)->setText(QString::number(hisData.windRate, 'g', 4));
 	ui->tableWidget->item(rowNO, COL_ROOMAREA)->setText(QString::number(hisData.roomArea));
 	switch (hisData.weather) {
 	case weather_fine:
-		ui->tableWidget->item(rowNO, COL_WFINE)->setText("1");
+		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(rowNO, COL_WFINE);
+		pRadioBtn->toggle();
 		break;
 	case weather_cloudy:
-		ui->tableWidget->item(rowNO, COL_WCLOUDY)->setText("1");
+		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(rowNO, COL_WCLOUDY);
+		pRadioBtn->toggle();
 		break;
 	case weather_shade:
-		ui->tableWidget->item(rowNO, COL_WSHADE)->setText("1");
+		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(rowNO, COL_WSHADE);
+		pRadioBtn->toggle();
 		break;
 	default:
 		break;
 	}
 	m_seq++;
+}
+
+void readDataDlg::newTblRow(int rowNO)
+{
+	QButtonGroup* pBtnGroup = new QButtonGroup;
+	QRadioButton* pRadioFine = new QRadioButton;
+	QRadioButton* pRadioCloudy = new QRadioButton;
+	QRadioButton* pRadioShade = new QRadioButton;
+
+	for (int i = 0; i < TABLE_COLS; i++) {
+		ui->tableWidget->setItem(rowNO, i, new QTableWidgetItem(QString("")));
+		ui->tableWidget->item(rowNO, i)->setTextAlignment(Qt::AlignVCenter);
+	}
+
+	pBtnGroup->addButton(pRadioFine);
+	pBtnGroup->addButton(pRadioCloudy);
+	pBtnGroup->addButton(pRadioShade);
+
+	ui->tableWidget->setCellWidget(rowNO, COL_WFINE, pRadioFine);
+	ui->tableWidget->setCellWidget(rowNO, COL_WCLOUDY, pRadioCloudy);
+	ui->tableWidget->setCellWidget(rowNO, COL_WSHADE, pRadioShade);
+}
+
+void readDataDlg::allDataQueryDone()
+{
+	ui->btnReadData->setEnabled(true);
+	QMessageBox::about(this, QObject::tr("done"),
+		QObject::tr("query done!"));
+}
+
+void readDataDlg::resizeEvent(QResizeEvent * e)
+{
+	qDebug() << "resizeEvent...";
+	e = e;
+	int tw = ui->tableWidget->size().width();
+	int vw = ui->tableWidget->verticalHeader()->size().width();
+	int hSize = (int)((tw - vw - 5) / TABLE_COLS);
+	ui->tableWidget->horizontalHeader()->setDefaultSectionSize(hSize);
+}
+
+void readDataDlg::on_btnExit_clicked()
+{
+	this->close();
+}
+
+void readDataDlg::on_btnSave_clicked()
+{
+
 }
