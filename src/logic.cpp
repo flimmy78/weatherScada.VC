@@ -154,7 +154,7 @@ void logicObject::toStdHisData(historyDataPtr pHisData)
 		} else if (s == windrateNo) {
 			value = bcdToInt(ctlMessStr.MeterData.Flow, 4, 1);
 			pHisData->windRate = value / 100.0;
-			foundwindrateMeter;
+			foundwindrateMeter = true;
 		}
 		if (foundHeatMeter && foundroomTempMeter && foundairTempMeter && foundwindrateMeter) {
 			break;
