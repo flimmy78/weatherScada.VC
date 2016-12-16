@@ -74,8 +74,11 @@ void logicObject::readFrameFromCom(QByteArray b)
 	hisdata_head_str BodyHeadStr = { 0 };
 	historyDataStr stdHisData = { 0 };
 	uint8* pFrame = (uint8*)b.data();
+	QSettings settings(INI_PATH, QSettings::IniFormat);
 
 	memcpy(&(stdHisData.timeNode), &m_timeNode, sizeof(sysTimeStr));
+	stdHisData.roomArea = settings.value(STRING_ROOMAREA).toFloat();//½¨ÖþÃæ»ý
+	stdHisData.weather = weather_noData;
 	if (b.isEmpty()) {
 		emit comEmpty(stdHisData);
 		return;
@@ -157,7 +160,6 @@ void logicObject::toStdHisData(historyDataPtr pHisData)
 			break;
 		}
 	}
-	pHisData->weather = weather_noData;
 }
 
 void logicObject::send1stFrameToCom(sysTimeStr timeNode)
