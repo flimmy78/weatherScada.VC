@@ -42,6 +42,8 @@ public slots :
 	void closeCom();
 
 	void sendBuf(QByteArray);
+
+private slots :
 	void readBuf();
 	void sendData();
 };

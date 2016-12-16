@@ -50,7 +50,6 @@ signals:
 	void readComData(QByteArray);//向串口发送数据帧, 与com.sendBuf相连
 	void comEmpty(historyDataStr);
 
-	void readFirstFrame(QByteArray);
 	void readNextFrame(uint8);//读取下一帧
 public slots :
 	void startThread();
@@ -64,6 +63,8 @@ public slots :
 	 * 发送给上位机, 所以要区分是第一帧还是后续帧.
 	 */
 	void send1stFrameToCom(sysTimeStr);//第一帧命令, 与db.oneRowNotExist(sysTimePtr)相连
+
+private slots:
 	void sendMultiFrameToCom(uint8);//后续帧命令, 与this.readNextFrame(uint8&)相连
 };
 

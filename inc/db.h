@@ -55,11 +55,13 @@ signals:
 
 public slots:
 	void startThread();
-	bool openDB();
-	void closeDB();
 
 	void queryOneRow(sysTimeStr);
 	void insertOneRow(historyDataStr);
+
+private slots:
+	bool openDB();
+	void closeDB();
 };
 
 #endif // DB_H

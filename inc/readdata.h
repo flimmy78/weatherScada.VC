@@ -72,6 +72,8 @@ private:
 	QList<QSerialPort::StopBits>	m_stopbitList;
 
 private slots:
+	void showEvent(QShowEvent* e);
+	void closeEvent(QCloseEvent* e);
 	void initWidget();
 	void initCom();
 	void initLogic();
@@ -84,9 +86,8 @@ private slots:
 	void on_btnExit_clicked();
 	void resizeEvent(QResizeEvent * event);
 	void newTblRow(int);
+
 public slots:
-	void showEvent(QShowEvent* e);
-	void closeEvent(QCloseEvent* e);
 	void getData(historyDataStr);
 
 	void openComOK();
