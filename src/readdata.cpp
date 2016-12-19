@@ -17,7 +17,7 @@ readDataDlg::readDataDlg(QWidget *parent) :
 	qRegisterMetaType<comInfoPtr>("comInfoPtr");
 	qRegisterMetaType<historyDataStr>("historyDataStr");
 	qRegisterMetaType<sysTimeStr>("sysTimeStr");
-
+	qRegisterMetaType<QList<historyDataStr>>("QList<historyDataStr>");
 	initCom();
 	initLogic();
 	initDb();
@@ -50,7 +50,7 @@ void readDataDlg::initCom()
 	m_comPort = NULL;
 	m_comPort = new comObject();
 	m_comPort->moveToThread(m_comThread);
-	
+
 	connect(this, SIGNAL(openCom(comInfoPtr)), m_comPort, SLOT(openCom(comInfoPtr)));
 	connect(m_comPort, SIGNAL(openComOK()), this, SLOT(openComOK()));
 	connect(m_comPort, SIGNAL(openComFail()), this, SLOT(openComFail()));
@@ -94,12 +94,17 @@ void readDataDlg::initLogic()
 
 	connect(this, SIGNAL(queryData(const QDate, const QDate)), \
 		m_logicObj, SLOT(readHisData(const QDate, const QDate)));
+	connect(this, SIGNAL(tblDataDone(QList<historyDataStr>)), \
+		m_logicObj, SLOT(updateRows(QList<historyDataStr>)));
 	connect(this, SIGNAL(signalClosed()), m_logicObj, SIGNAL(finished()));
 	connect(m_logicObj, SIGNAL(dataReady(historyDataStr)), \
 		this, SLOT(getData(historyDataStr)));
 	connect(m_logicObj, SIGNAL(comEmpty(historyDataStr)), \
 		this, SLOT(getData(historyDataStr)));
-	connect(m_logicObj, SIGNAL(allDataQueryDone()), this, SLOT(allDataQueryDone()));
+	connect(m_logicObj, SIGNAL(allDataQueryDone()), \
+		this, SLOT(allDataQueryDone()));
+	connect(m_logicObj, SIGNAL(updateDone()), \
+		this, SLOT(allDataUpdateDone()));
 	CONNECT_THREAD(m_logicObj, m_logicThread);
 }
 
@@ -122,8 +127,11 @@ void readDataDlg::initIntraction()
 
 	connect(m_logicObj, SIGNAL(readDbData1Node(sysTimeStr)), m_dbObj, SLOT(queryOneRow(sysTimeStr)));
 	connect(m_logicObj, SIGNAL(dataReady(historyDataStr)), m_dbObj, SLOT(insertOneRow(historyDataStr)));
+	connect(m_logicObj, SIGNAL(updateOneRow(historyDataStr)), m_dbObj, SLOT(updateOneRow(historyDataStr)));
 	connect(m_dbObj, SIGNAL(oneRowNotExist(sysTimeStr)), m_logicObj, SLOT(send1stFrameToCom(sysTimeStr)));
 	connect(m_dbObj, SIGNAL(oneRowExist(historyDataStr)), m_logicObj, SIGNAL(dataReady(historyDataStr)));
+	connect(m_dbObj, SIGNAL(updateOK()), m_logicObj, SLOT(update1Row()));
+	connect(m_dbObj, SIGNAL(updateFail()), m_logicObj, SLOT(update1Row()));
 	connect(m_logicObj, SIGNAL(readComData(QByteArray)), m_comPort, SLOT(sendBuf(QByteArray)));
 	connect(m_comPort, SIGNAL(readBufReady(QByteArray)), m_logicObj, SLOT(readFrameFromCom(QByteArray)));
 }
@@ -270,7 +278,6 @@ void readDataDlg::initWidget()
 	ui->tableWidget->item(1, COL_TAIR2)->setTextAlignment(Qt::AlignCenter);
 	ui->tableWidget->item(1, COL_TAIR2)->setTextColor(Qt::green);
 
-
 	ui->tableWidget->item(0, COL_WINDRATE)->setBackgroundColor(color);
 	ui->tableWidget->item(0, COL_WINDRATE)->setFlags(Qt::NoItemFlags);
 	ui->tableWidget->item(0, COL_WINDRATE)->setText(QString(tr("windrate")));
@@ -405,15 +412,15 @@ void readDataDlg::getData(historyDataStr hisData)
 	switch (hisData.weather) {
 	case weather_fine:
 		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(rowNO, COL_WFINE);
-		pRadioBtn->toggle();
+		pRadioBtn->setChecked(true);
 		break;
 	case weather_cloudy:
 		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(rowNO, COL_WCLOUDY);
-		pRadioBtn->toggle();
+		pRadioBtn->setChecked(true);
 		break;
 	case weather_shade:
 		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(rowNO, COL_WSHADE);
-		pRadioBtn->toggle();
+		pRadioBtn->setChecked(true);
 		break;
 	default:
 		break;
@@ -440,6 +447,9 @@ void readDataDlg::newTblRow(int rowNO)
 	ui->tableWidget->setCellWidget(rowNO, COL_WFINE, pRadioFine);
 	ui->tableWidget->setCellWidget(rowNO, COL_WCLOUDY, pRadioCloudy);
 	ui->tableWidget->setCellWidget(rowNO, COL_WSHADE, pRadioShade);
+	pRadioFine->setChecked(false);
+	pRadioCloudy->setChecked(false);
+	pRadioShade->setChecked(false);
 }
 
 void readDataDlg::allDataQueryDone()
@@ -466,5 +476,72 @@ void readDataDlg::on_btnExit_clicked()
 
 void readDataDlg::on_btnSave_clicked()
 {
+	QDate date = QDate::currentDate();
+	QTime time = QTime::currentTime();
+	QString s;
+	QRadioButton* pRadioBtn;
 
+	m_hisDataList.clear();
+	for (int i = TABLE_DEFAULT_ROWS;i < ui->tableWidget->rowCount();i++) {
+		historyDataStr hisData = { 0 };
+		s = ui->tableWidget->item(i, COL_DATE)->text();
+		date = QDate::fromString(s, "yyyy-MM-dd");
+		qDebug() << "date: " << date;
+		hisData.timeNode.u8year = HEX_TO_BCD(date.year() - TWO_THOUSAND_YEAR);
+		hisData.timeNode.u8month = HEX_TO_BCD(date.month());
+		hisData.timeNode.u8day = HEX_TO_BCD(date.day());
+		s.sprintf("20%02X-%02X-%02X", hisData.timeNode.u8year, hisData.timeNode.u8month, hisData.timeNode.u8day);
+		qDebug() << s;
+		s = ui->tableWidget->item(i, COL_TIMENODE)->text();
+		time = QTime::fromString(s, "hh:mm:ss");
+		qDebug() << "time: " << time;
+		hisData.timeNode.u8hour = HEX_TO_BCD(time.hour());
+		hisData.timeNode.u8minute = HEX_TO_BCD(time.minute());
+		hisData.timeNode.u8second = HEX_TO_BCD(time.second());
+		s.sprintf("%02X:%02X:%02X", hisData.timeNode.u8hour, hisData.timeNode.u8minute, hisData.timeNode.u8second);
+		qDebug() << s;
+		hisData.tIn = ui->tableWidget->item(i, COL_TEMPIN)->text().toFloat();
+		hisData.tOut = ui->tableWidget->item(i, COL_TEMPOUT)->text().toFloat();
+		hisData.tAvg = ui->tableWidget->item(i, COL_TEMPAVG)->text().toFloat();
+		hisData.flowRate = ui->tableWidget->item(i, COL_FLOWRATE)->text().toFloat();
+		hisData.power = ui->tableWidget->item(i, COL_POWER)->text().toFloat();
+		hisData.accumFlow = ui->tableWidget->item(i, COL_ACCUMFLOW)->text().toFloat();
+		hisData.deltaFlow = ui->tableWidget->item(i, COL_DELTAFLOW)->text().toFloat();
+		hisData.energy = ui->tableWidget->item(i, COL_ENERGY)->text().toFloat();
+		hisData.deltaEnergy = ui->tableWidget->item(i, COL_DELTAENERGY)->text().toFloat();
+		hisData.inTemp1 = ui->tableWidget->item(i, COL_TROOM1)->text().toFloat();
+		hisData.inTemp2 = ui->tableWidget->item(i, COL_TROOM2)->text().toFloat();
+		hisData.outTemp1 = ui->tableWidget->item(i, COL_TAIR1)->text().toFloat();
+		hisData.outTemp2 = ui->tableWidget->item(i, COL_TAIR2)->text().toFloat();
+		hisData.windRate = ui->tableWidget->item(i, COL_WINDRATE)->text().toFloat();
+		hisData.roomArea = ui->tableWidget->item(i, COL_ROOMAREA)->text().toFloat();
+
+		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(i, COL_WFINE);
+		hisData.weather = weather_noData;//init with weather_noData first
+		if (pRadioBtn->isChecked()) {
+			hisData.weather = weather_fine;
+		}
+
+		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(i, COL_WCLOUDY);
+		if (pRadioBtn->isChecked()) {
+			hisData.weather = weather_cloudy;
+		}
+
+		pRadioBtn = (QRadioButton*)ui->tableWidget->cellWidget(i, COL_WSHADE);
+		if (pRadioBtn->isChecked()) {
+			hisData.weather = weather_shade;
+		}
+
+		m_hisDataList.append(hisData);
+	}
+	emit tblDataDone(m_hisDataList);
+	m_hisDataList.clear();
+	ui->btnSave->setEnabled(false);
+}
+
+void readDataDlg::allDataUpdateDone()
+{
+	QMessageBox::about(this, QObject::tr("done"),
+		QObject::tr("update done!"));
+	ui->btnSave->setEnabled(true);
 }

@@ -1,5 +1,6 @@
-#include "mainwindow.h"
 #include <QApplication>
+#include "mainwindow.h"
+#include "basedef.h"
 
 int main(int argc, char *argv[])
 {
@@ -8,8 +9,8 @@ int main(int argc, char *argv[])
 	translator = new QTranslator(0);
 	translator->load("language/weatherScada_zh.qm");
 	a.installTranslator(translator);
-    MainWindow w;
-    w.show();
+	MainWindow w;
+	w.show();
 
     return a.exec();
 }

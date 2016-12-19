@@ -2,7 +2,7 @@
 #include "db.h"
 
 
-sqliteDb::sqliteDb(QObject* parent)
+sqliteDb::sqliteDb(QObject* parent) : QObject(parent)
 {
 	m_sqlDb = QSqlDatabase::addDatabase("QSQLITE");
 	m_sqlDb.setDatabaseName(DB_PATH);
@@ -41,8 +41,6 @@ void sqliteDb::queryOneRow(sysTimeStr timeNode)
 		timeNode.u8hour, timeNode.u8minute, timeNode.u8second);
 	query.exec(sqlStmt);
 
-	int cnt = query.size();
-
 	if (!query.first())
 	{
 		emit oneRowNotExist(timeNode);
@@ -69,7 +67,57 @@ void sqliteDb::queryOneRow(sysTimeStr timeNode)
 	emit oneRowExist(hisData);
 }
 
+int sqliteDb::rowCnt(sysTimeStr timeNode)
+{
+	QString sqlStmt;
+	QSqlQuery query(m_sqlDb);
+
+	sqlStmt.sprintf("select count(*) from %s where f_timenode=\'20%02X-%02X-%02X %02X:%02X:%02X.000\'", \
+		HIS_TABLE, timeNode.u8year, timeNode.u8month, timeNode.u8day, timeNode.u8hour, \
+		timeNode.u8minute, timeNode.u8second);
+	if (!query.exec(sqlStmt))
+		return 0;
+
+	if(!query.first())
+		return 0;
+
+	return query.value(0).toInt();
+}
+
 void sqliteDb::insertOneRow(historyDataStr hisData)
+{
+	bool result = false;
+	if (rowCnt(hisData.timeNode)) {
+		result = updateIntoDb(hisData);
+	} else {
+		result = insertIntoDb(hisData);
+	}
+
+	if (result) {
+		emit insertOK();
+	} else {
+		emit insertFail((hisData.timeNode));
+	}
+}
+
+
+void sqliteDb::updateOneRow(historyDataStr hisData)
+{
+	bool result = false;
+	if (rowCnt(hisData.timeNode)) {
+		result = updateIntoDb(hisData);
+	} else {
+		result = insertIntoDb(hisData);
+	}
+
+	if (result) {
+		emit updateOK();
+	} else {
+		emit updateFail();
+	}
+}
+
+bool sqliteDb::insertIntoDb(historyDataStr hisData)
 {
 	QString sqlStmt;
 	QSqlQuery query(m_sqlDb);
@@ -95,20 +143,20 @@ void sqliteDb::insertOneRow(historyDataStr hisData)
 	sqlStmt.append(QString("%1,").arg((int)(hisData.weather), 0, 10));
 	sqlStmt.append(QString("%1)").arg(hisData.roomArea, 6, 'g', 6));
 
-	//应该先作检查, 如果已存在当前时间点的历史数据, 则更新; 否则插入. 待完善.
-
-	if (query.exec(sqlStmt)) {
-		emit insertOK();
-	} else {
-		emit insertFail((hisData.timeNode));
-	}
+	return query.exec(sqlStmt);
 }
 
-void sqliteDb::updateOneRow(historyDataStr)
+bool sqliteDb::updateIntoDb(historyDataStr hisData)
 {
 	QString sqlStmt;
 	QSqlQuery query(m_sqlDb);
 
 	sqlStmt.clear();
-	sqlStmt.sprintf("update %s set ");
+	sqlStmt.sprintf("update %s set f_tIn=%f,f_tOut=%f,f_tAvg=%f,f_flowRate=%f,f_power=%f,f_accumFlow=%f,f_deltaFlow=%f,f_energy=%f,f_deltaEnergy=%f,f_inTemp1=%f,f_inTemp2=%f,f_outTemp1=%f,f_outTemp2=%f,f_windRate=%f,f_weather=%d,f_roomArea=%f where f_timenode=\'20%02X-%02X-%02X %02X:%02X:%02X.000\'", HIS_TABLE, hisData.tIn, hisData.tOut, \
+		hisData.tAvg, hisData.flowRate, hisData.power, hisData.accumFlow, hisData.deltaFlow, hisData.energy, \
+		hisData.deltaEnergy, hisData.inTemp1, hisData.inTemp2, hisData.outTemp1, hisData.outTemp2, hisData.windRate, \
+		(int)hisData.weather, hisData.roomArea, hisData.timeNode.u8year, hisData.timeNode.u8month, \
+		hisData.timeNode.u8day, hisData.timeNode.u8hour, hisData.timeNode.u8minute, hisData.timeNode.u8second);
+
+	return query.exec(sqlStmt);
 }

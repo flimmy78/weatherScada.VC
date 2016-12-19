@@ -14,10 +14,13 @@ logicObject::~logicObject()
 void logicObject::startThread()
 {
 	qDebug() << "logicObject startThread: " << QThread::currentThreadId();
+	m_hisDataList.clear();
+	m_timeNodeList.clear();
 	connect(this, SIGNAL(timeNodeCalcDone(historyDataStr)), this, SLOT(read1NodeData(historyDataStr)));
 	connect(this, SIGNAL(dataReady(historyDataStr)), this, SLOT(read1NodeData(historyDataStr)));
 	connect(this, SIGNAL(readNextFrame(uint8)), this, SLOT(sendMultiFrameToCom(uint8)));
 	connect(this, SIGNAL(comEmpty(historyDataStr)), this, SLOT(read1NodeData(historyDataStr)));
+	connect(this, SIGNAL(updateAllRows()), this, SLOT(update1Row()));
 	if (m_sendSignalTimer)
 		delete m_sendSignalTimer;
 	m_sendSignalTimer = new QTimer;
@@ -187,4 +190,23 @@ void logicObject::sendMultiFrameToCom(uint8 seq)
 	b = QByteArray((char*)buf, bufSize);
 	emit readComData(b);
 	qDebug() << "readComData emitted";
+}
+
+void logicObject::updateRows(QList<historyDataStr> hisList)
+{
+	m_hisDataList.clear();
+	m_hisDataList.append(hisList);
+	emit updateAllRows();
+}
+
+void logicObject::update1Row()
+{
+	historyDataStr hisdata;
+	if (m_hisDataList.isEmpty()) {
+		emit updateDone();
+		return;
+	}
+	hisdata = m_hisDataList.first();
+	emit updateOneRow(hisdata);
+	m_hisDataList.removeFirst();
 }

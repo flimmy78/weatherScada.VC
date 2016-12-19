@@ -11,7 +11,6 @@
 #define F_TIMENODE	"f_timenode"
 
 
-
 typedef enum {
 	FIELD_SEQ = 0,	//序列号
 	FIELD_DATE,		//插入时间
@@ -53,6 +52,9 @@ signals:
 	void insertOK();
 	void insertFail(sysTimeStr);
 
+	void updateOK();
+	void updateFail();
+
 public slots:
 	void startThread();
 
@@ -63,6 +65,9 @@ public slots:
 private slots:
 	bool openDB();
 	void closeDB();
+	int rowCnt(sysTimeStr);
+	bool insertIntoDb(historyDataStr hisData);
+	bool updateIntoDb(historyDataStr hisData);
 };
 
 #endif // DB_H

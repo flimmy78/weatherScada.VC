@@ -71,6 +71,8 @@ private:
 	QList<QSerialPort::Parity>		m_parityList;
 	QList<QSerialPort::StopBits>	m_stopbitList;
 
+	QList<historyDataStr> m_hisDataList;
+
 private slots:
 	void showEvent(QShowEvent* e);
 	void closeEvent(QCloseEvent* e);
@@ -94,11 +96,13 @@ public slots:
 	void openComFail();
 
 	void allDataQueryDone();
+	void allDataUpdateDone();
 
 signals:
 	void signalClosed();
 	void queryData(const QDate start, const QDate end);
 	void openCom(comInfoPtr);
+	void tblDataDone(QList<historyDataStr>);//表格的每一行的数据都已转成标准历史数据格式
 };
 
 #endif // READDATA_H

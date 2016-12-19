@@ -36,6 +36,7 @@ private:
 	sysTimeStr m_timeNode;
 	QList<sysTimeStr> m_timeNodeList;
 	QTimer* m_sendSignalTimer;
+	QList<historyDataStr> m_hisDataList;
 
 	void toStdHisData(historyDataPtr);
 signals:
@@ -51,10 +52,16 @@ signals:
 	void comEmpty(historyDataStr);
 
 	void readNextFrame(uint8);//读取下一帧
+	void updateAllRows();
+	void updateOneRow(historyDataStr);
+	void updateDone();
+
 public slots :
 	void startThread();
 	void readHisData(const QDate, const QDate);
 	void read1NodeData(historyDataStr);
+	void updateRows(QList<historyDataStr>);//与readdata交互
+	void update1Row();//更新数据库里的一行数据, 与db交互
 	void readFrameFromCom(QByteArray);//用于接收来自串口的数据, 与com.readBufReady相连
 
 	/*
